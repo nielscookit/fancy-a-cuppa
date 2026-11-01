@@ -191,6 +191,9 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 .free-fields:not([hidden]) + #teaDetails:not([hidden]){margin-top:16px}
 /* Primary-Farbe für Speichern ohne Größenänderung */
 #saveTea{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important}
+/* Einheit-Indikatoren der Zeit-Presets wie bei den Wassermengen */
+.preset{position:relative}
+.preset .preset-unit,.preset.active .preset-unit{position:absolute;top:8px;right:8px;font-size:13px!important;font-weight:600!important;line-height:1;color:#aaa8a6!important;pointer-events:none}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 </head>
@@ -213,10 +216,10 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 <button id="plus" class="round" type="button" aria-label="Eine Minute mehr">+</button>
 </div>
 <div class="presets" role="group" aria-label="Ziehzeit wählen">
-<button type="button" class="preset" data-min="2" aria-label="2 Minuten">2</button>
-<button type="button" class="preset" data-min="3" aria-label="3 Minuten">3</button>
-<button type="button" class="preset" data-min="4" aria-label="4 Minuten">4</button>
-<button type="button" class="preset" data-min="5" aria-label="5 Minuten">5</button>
+<button type="button" class="preset" data-min="2" aria-label="2 Minuten">2<span class="preset-unit" aria-hidden="true">min</span></button>
+<button type="button" class="preset" data-min="3" aria-label="3 Minuten">3<span class="preset-unit" aria-hidden="true">min</span></button>
+<button type="button" class="preset" data-min="4" aria-label="4 Minuten">4<span class="preset-unit" aria-hidden="true">min</span></button>
+<button type="button" class="preset" data-min="5" aria-label="5 Minuten">5<span class="preset-unit" aria-hidden="true">min</span></button>
 </div>
 <div class="actions">
 <button id="start" type="button" class="primary">FANCY A CUPPA</button>
