@@ -353,7 +353,7 @@ const builtins=[
 const volumeOptions=[["cup","Tasse",250],["smallpot","Kleine Kanne",500],["pot","Kanne",1000],["largepot","Große Kanne",1500],["custom","Eigene Menge",null]];
 let saved=[];
 try{const data=JSON.parse(localStorage.getItem("fancy-cuppa-teas-v1")||"[]");if(Array.isArray(data))saved=data.filter(t=>t&&typeof t.name==="string"&&["loose","bag"].includes(t.type)&&Number.isFinite(t.dose)&&t.dose>0&&Number.isFinite(t.min)&&t.min>=1);}catch(e){}
-let selectedTea="",volumeId="myPot",brewMin=4;
+let selectedTea="",volumeId="smallpot",brewMin=4;
 function activeTea(){if(selectedTea==="free")return {name:$("freeName").value,type:$("freeType").value,dose:Number($("freeDose").value),unit:$("freeType").value==="bag"?"bag":"measure",min:brewMin};return [...builtins,...saved].find(t=>t.id===selectedTea)||null;}
 function selectedMl(){return volumeId==="custom"?Number($("customMl").value):volumeOptions.find(v=>v[0]===volumeId)[2];}
 function format(n){return n.toLocaleString("de-DE",{maximumFractionDigits:2});}
