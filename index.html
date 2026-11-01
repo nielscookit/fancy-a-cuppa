@@ -210,6 +210,11 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 .scan-actions .confirm{background:var(--accent);color:#fff}
 /* Hidden muss trotz Layout-Styles wirksam bleiben */
 #teaDetails[hidden],#freeFields[hidden],#scanPanel[hidden]{display:none!important}
+/* Im Scanformular nur Formularfelder und Aktionen zeigen */
+.tea-picker[hidden]{display:none!important}
+#scanHeading[hidden],#scanStatus[hidden]{display:none!important}
+#freeFields .scan-actions{margin-top:0}
+#freeFields .scan-actions button{flex:1;min-height:52px}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 </head>
@@ -251,10 +256,10 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 <input class="scan-input" id="scanFile" type="file" accept="image/*" capture="environment">
 <input class="scan-input" id="galleryFile" type="file" accept="image/*">
 <div id="scanPanel" class="scan-panel" hidden>
-<h2 id="scanHeading">TEXT WIRD ERKANNT …</h2>
+<h2 id="scanHeading" hidden>ANGABEN PRÜFEN</h2>
 <div id="scanCapture" hidden></div>
 <div id="scanReview" hidden>
-<p id="scanStatus" class="hint" role="status"></p>
+<p id="scanStatus" class="hint" role="status" hidden></p>
 <label><span class="field-label">Tee-Name (Pflicht)</span><input id="scanName" maxlength="80" placeholder="z. B. Assam ..."></label>
 <label><span class="field-label">Teeart</span><select id="scanType"><option value="loose">Loser Tee</option><option value="bag">Teebeutel</option></select></label>
 <label><span class="field-label">Dosierung – Menge</span><input id="scanDose" type="number" min="0.1" max="1000" step="any" inputmode="decimal" placeholder="Bitte prüfen / eintragen"></label>
@@ -275,7 +280,7 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 <label><span class="field-label">Einheit (wie auf der Packung)</span><select id="freeUnit"><option value="">Bitte auswählen</option><option value="measure">TeaGschwendner-Teemaß</option><option value="tsp">Teelöffel</option><option value="g">Gramm</option><option value="bag">Teebeutel</option></select></label>
 <label><span class="field-label">Für Wassermenge (ml)</span><input id="freeBase" type="number" min="50" max="5000" step="any" inputmode="numeric" placeholder="z. B. 250"></label>
 <label><span class="field-label">Ziehzeit (Minuten)</span><input id="freeMin" type="number" min="1" max="60" step="1" inputmode="numeric" placeholder="z. B. 4"></label>
-<button id="saveTea" type="button" class="scan primary">TEE SPEICHERN</button><p id="freeFeedback" class="hint" role="status"></p>
+<div class="scan-actions"><button id="freeCancel" type="button">ABBRECHEN</button><button id="saveTea" type="button" class="scan primary">TEE SPEICHERN</button></div><p id="freeFeedback" class="hint" role="status"></p>
 </div>
 <div id="teaDetails" hidden>
 <div class="volumes" id="volumes" role="group" aria-label="Wassermenge"></div>
@@ -460,6 +465,7 @@ $("brewStart").disabled=!valid;
 }
 function syncCreationMode(){
 const editing=selectedTea==="free"||!$("scanPanel").hidden;
+document.querySelector(".tea-picker").hidden=!$("scanPanel").hidden;
 $("teaDetails").hidden=editing||!selectedTea;
 $("freeFields").hidden=selectedTea!=="free"||!$("scanPanel").hidden;
 }
@@ -470,6 +476,7 @@ if(!selectedTea)return;
 if(selectedTea!=="free")brewMin=activeTea().min;else if(Number($("freeMin").value)>0)brewMin=Number($("freeMin").value);
 renderDose();
 }
+$("freeCancel").addEventListener("click",()=>{selectedTea="";renderTeas();selectTea();$("freeFeedback").textContent="";});
 $("teaSelect").addEventListener("change",()=>{selectedTea=$("teaSelect").value;selectTea();});
 $("customMl").addEventListener("input",renderDose);
 $("brewMinus").addEventListener("click",()=>{brewMin=Math.max(1,brewMin-1);renderDose();});
@@ -507,17 +514,13 @@ if(!file)return;
 scanFile=file;
 $("scanPanel").hidden=false;
 syncCreationMode();
-$("scanReview").hidden=true;
-$("scanHeading").textContent="TEXT WIRD ERKANNT …";
-$("scanFeedback").textContent="Foto wird verarbeitet …";
+$("scanReview").hidden=false;
+$("scanFeedback").textContent="";
 performScan();
 }
 $("scanFile").addEventListener("change",()=>acceptScan($("scanFile").files[0]));
 $("galleryFile").addEventListener("change",()=>acceptScan($("galleryFile").files[0]));
-function scanStage(review){
-$("scanReview").hidden=!review;
-$("scanHeading").textContent=review?"ANGABEN PRÜFEN":"TEXT WIRD ERKANNT …";
-}
+function scanStage(review){$("scanReview").hidden=!review;}
 function loadOcr(){
 return new Promise((resolve,reject)=>{
 if(window.Tesseract){resolve(window.Tesseract);return;}
@@ -589,22 +592,22 @@ let scanning=false;
 async function performScan(){
 const file=scanFile;if(!file||scanning)return;
 scanning=true;
-$("scanFeedback").textContent="Foto wird ausgewertet …";
+$("scanFeedback").textContent="";
 ["scanName","scanDose","scanBase","scanMin"].forEach(id=>$(id).value="");
 $("scanUnit").value="";$("scanType").value="loose";
 try{
-const ocr=await loadOcr();$("scanFeedback").textContent="Text wird erkannt …";
+const ocr=await loadOcr();
 const worker=await ocr.createWorker("deu+eng");
 let raw="";
 try{const result=await worker.recognize(file);raw=result.data.text||"";}finally{await worker.terminate();}
 $("scanRaw").textContent=raw||"Kein Text erkannt.";
 parseOcr(raw);updateScanUnits();
 const missing=[["scanName","Name"],["scanDose","Dosierung"],["scanUnit","Einheit"],["scanBase","Wassermenge"],["scanMin","Ziehzeit"]].filter(([id])=>!$(id).value).map(x=>x[1]);
-$("scanStatus").textContent=missing.length?"Bitte prüfen und ergänzen: "+missing.join(", ")+".":"Angaben erkannt. Bitte vor dem Speichern mit der Packung vergleichen.";
+$("scanStatus").textContent="";
 scanStage(true);$("scanFeedback").textContent="";
 }catch(e){
 $("scanRaw").textContent="Texterkennung nicht verfügbar.";
-$("scanStatus").textContent="Texterkennung fehlgeschlagen. Bitte Angaben manuell eintragen.";
+$("scanStatus").textContent="";
 scanStage(true);$("scanFeedback").textContent="";
 }finally{scanning=false;}
 }
