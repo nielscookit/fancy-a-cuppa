@@ -115,6 +115,10 @@ button:focus-visible,.tea-option .tea-remove:focus-visible{outline-color:var(--a
 /* Feinabstimmung der Timer-Bedienung */
 .preset.active,.volume.active,.preset.active:focus-visible,.volume.active:focus-visible{outline-width:4px!important;outline-offset:-4px}
 .timer > .stepper{gap:12px}
+
+/* Presets im 2x2-Raster; Selected State 3px */
+.presets{grid-template-columns:repeat(2,minmax(0,1fr))}
+.preset.active,.volume.active,.preset.active:focus-visible,.volume.active:focus-visible{outline-width:3px!important;outline-offset:-3px}
 </style>
 </head>
 <body>
