@@ -197,6 +197,19 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 /* Scan-/Foto-Kacheln: gleiche Höhe wie Dosierhilfe, Icon-only */
 .scan-choices .scan-action{height:52px;min-height:52px;padding:0;display:flex;align-items:center;justify-content:center}
 .scan-choices .scan-choice-icon{font-size:24px!important;font-weight:400!important;line-height:24px;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+/* Anlegen und Scan-Prüfung: identische Formularoptik */
+.scan-panel{background:transparent;border:0;padding:0;margin-top:16px;border-radius:0}
+.scan-panel h2{margin:0 0 14px;font-size:14px}
+.scan-panel label{display:block;margin:0}
+#scanReview{display:grid;gap:10px}
+#scanReview[hidden]{display:none!important}
+#scanReview label{margin:0}
+#scanReview input,#scanReview select{width:100%}
+.scan-actions{margin-top:0}
+.scan-actions button{min-height:52px;border-radius:6px}
+.scan-actions .confirm{background:var(--accent);color:#fff}
+/* Hidden muss trotz Layout-Styles wirksam bleiben */
+#teaDetails[hidden],#freeFields[hidden],#scanPanel[hidden]{display:none!important}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 </head>
@@ -436,18 +449,22 @@ const tea=activeTea(),ml=selectedMl();
 if(!tea)return;
 const valid=Number.isFinite(ml)&&ml>=50&&ml<=5000&&Number.isFinite(tea.dose)&&tea.dose>0&&tea.dose<=1000&&!!tea.unit;
 $("doseResult").textContent=!valid?"Wassermenge prüfen":tea.type==="bag"?format(Math.ceil(ml*tea.dose/1000))+" Teebeutel":format(Math.round(ml*tea.dose/100)/10)+(tea.unit==="g"?" g":tea.unit==="tsp"?" TL":" Teemaß");
-$("doseHint").textContent=tea.type==="bag"?"Basis: "+format(tea.dose)+" Beutel pro Liter (aufgerundet).":"Basis: "+format(tea.dose)+(tea.unit==="g"?" g":tea.unit==="tsp"?" Teelöffel":" gestrichene TeaGschwendner-Teemaß")+" pro Liter.";
+$("doseHint").textContent=!Number.isFinite(tea.dose)?"Bitte Dosierung und Bezugswassermenge eingeben.":tea.type==="bag"?"Basis: "+format(tea.dose)+" Beutel pro Liter (aufgerundet).":"Basis: "+format(tea.dose)+(tea.unit==="g"?" g":tea.unit==="tsp"?" Teelöffel":" gestrichene TeaGschwendner-Teemaß")+" pro Liter.";
 if(tea.provisional)$("doseHint").textContent+=" Richtwert – bitte Packungsangabe prüfen.";
 $("brewMinutes").textContent=brewMin+" MIN";
-if(selectedTea==="free")$("freeMin").value=brewMin;
+if(selectedTea==="free"&&$("freeMin").value)$("freeMin").value=brewMin;
 $("brewMinus").disabled=brewMin<=1;$("brewPlus").disabled=brewMin>=60;
 $("brewStart").textContent="TIMER STARTEN · "+brewMin+" MIN";
 $("brewStart").disabled=!valid;
 
 }
+function syncCreationMode(){
+const editing=selectedTea==="free"||!$("scanPanel").hidden;
+$("teaDetails").hidden=editing||!selectedTea;
+$("freeFields").hidden=selectedTea!=="free"||!$("scanPanel").hidden;
+}
 function selectTea(){
-$("teaDetails").hidden=!selectedTea;
-$("freeFields").hidden=selectedTea!=="free";
+syncCreationMode();
 
 if(!selectedTea)return;
 if(selectedTea!=="free")brewMin=activeTea().min;else if(Number($("freeMin").value)>0)brewMin=Number($("freeMin").value);
@@ -489,6 +506,7 @@ function acceptScan(file){
 if(!file)return;
 scanFile=file;
 $("scanPanel").hidden=false;
+syncCreationMode();
 $("scanReview").hidden=true;
 $("scanHeading").textContent="TEXT WIRD ERKANNT …";
 $("scanFeedback").textContent="Foto wird verarbeitet …";
@@ -590,7 +608,7 @@ $("scanStatus").textContent="Texterkennung fehlgeschlagen. Bitte Angaben manuell
 scanStage(true);$("scanFeedback").textContent="";
 }finally{scanning=false;}
 }
-$("scanBack").addEventListener("click",()=>{$("scanPanel").hidden=true;$("scan").focus();});
+$("scanBack").addEventListener("click",()=>{$("scanPanel").hidden=true;syncCreationMode();$("teaTrigger").focus();});
 $("scanSave").addEventListener("click",()=>{
 const name=$("scanName").value.trim(),qty=Number($("scanDose").value),base=Number($("scanBase").value),mins=Number($("scanMin").value),unit=$("scanUnit").value,type=$("scanType").value;
 const required=[["scanName","Teename"],["scanDose","Dosierung"],["scanUnit","Einheit"],["scanBase","Wassermenge"],["scanMin","Ziehzeit"]];
@@ -609,7 +627,7 @@ const tea={id:"scan-"+Date.now(),name,type,dose,min:mins,unit,provisional:false}
 const next=[...saved,tea];
 try{localStorage.setItem("fancy-cuppa-teas-v1",JSON.stringify(next));}catch(e){$("scanFeedback").textContent="Lokales Speichern ist nicht möglich.";return;}
 saved=next;selectedTea=tea.id;brewMin=mins;renderTeas();selectTea();
-$("scanPanel").hidden=true;$("brewMessage").textContent="Tee gespeichert und ausgewählt.";
+$("scanPanel").hidden=true;syncCreationMode();$("brewMessage").textContent="Tee gespeichert und ausgewählt.";
 requestAnimationFrame(()=>{$("teaTrigger").scrollIntoView({behavior:"instant",block:"start"});});
 });
 
