@@ -107,14 +107,14 @@ footer{text-align:center;color:#999;font-size:11px;line-height:1.7;margin-top:18
 </section>
 <div class="divider"></div>
 <section aria-label="Teezubereitung">
-<button id="scan" type="button" class="scan">⌁ TEE ERKENNEN</button>
+<button id="scan" type="button" class="scan" aria-label="Tee scannen">▣ TEE SCANNEN</button>
 <div id="scanPanel" class="scan-panel" hidden>
 <h2 id="scanHeading">1 / FOTOGRAFIEREN</h2>
 <div id="scanCapture">
-<p class="hint">Fotografiere die Zubereitungshinweise auf der Packung. Die Texterkennung benötigt beim ersten Start Internetzugang.</p>
-<input id="scanFile" type="file" accept="image/*" capture="environment" aria-label="Teepackung fotografieren oder Bild auswählen">
+<p class="hint">Fotografiere die Zubereitungshinweise. Die Texterkennung beginnt nach der Aufnahme automatisch.</p>
+<input id="scanFile" type="file" accept="image/*" capture="environment" aria-label="Teepackung fotografieren" hidden>
 <img id="scanPreview" class="scan-preview" alt="Ausgewähltes Verpackungsfoto" hidden>
-<button id="scanRead" type="button" class="scan" disabled>TEXT ERKENNEN</button>
+<button id="scanRead" type="button" class="scan" hidden>ERNEUT ERKENNEN</button>
 </div>
 <div id="scanReview" hidden>
 <p id="scanStatus" class="hint" role="status"></p>
@@ -304,8 +304,10 @@ try{localStorage.setItem("fancy-cuppa-teas-v1",JSON.stringify(saved));}catch(e){
 selectedTea=id;renderTeas();selectTea();$("brewMessage").textContent="Tee auf diesem Gerät gespeichert.";
 });
 $("scan").addEventListener("click",()=>{
-$("scanPanel").hidden=!$("scanPanel").hidden;
-if(!$("scanPanel").hidden)$("scanPanel").scrollIntoView({behavior:"smooth",block:"start"});
+scanStage(false);
+$("scanPanel").hidden=false;
+$("scanFile").value="";
+$("scanFile").click();
 });
 let scanObjectUrl=null;
 $("scanFile").addEventListener("change",()=>{
@@ -313,7 +315,7 @@ const file=$("scanFile").files&&$("scanFile").files[0];
 if(scanObjectUrl)URL.revokeObjectURL(scanObjectUrl);
 scanObjectUrl=file?URL.createObjectURL(file):null;
 $("scanPreview").hidden=!file;
-if(file)$("scanPreview").src=scanObjectUrl;
+if(file){$("scanPreview").src=scanObjectUrl;performScan();}
 $("scanRead").disabled=!file;
 $("scanFeedback").textContent="";
 });
@@ -332,42 +334,79 @@ document.head.append(script);
 });
 }
 function parseOcr(raw){
+const lines=raw.split(/\n/).map(x=>x.trim()).filter(Boolean);
 const text=raw.replace(/\s+/g," ");
-const time=text.match(/(?:ziehzeit|ziehen lassen|brewing time|steep(?:ing)? time)\s*[:\-]?\s*(\d{1,2})(?:\s*[-–]\s*(\d{1,2}))?\s*(?:min(?:uten|utes)?)?/i)
-||text.match(/(\d{1,2})(?:\s*[-–]\s*(\d{1,2}))?\s*(?:minuten|minutes|mins?)(?![a-z])/i);
-if(time){const n=Number(time[1]);if(n>=1&&n<=60)$("scanMin").value=String(n);}
+const normal=text.replace(/(\d)\s+(Minuten|minutes|mins?|min\b)/gi,"$1 $2");
+const times=[...normal.matchAll(/(\d{1,2})(?:\s*[-–]\s*(\d{1,2}))?\s*(?:minuten|minutes|mins?|min\b)/gi)]
+.map(m=>({n:Number(m[1]),pos:m.index||0}))
+.filter(m=>m.n>=1&&m.n<=20);
+const context=/(zieh|brew|steep|kochend|water|aufguss|ziehen)/i;
+const ranked=times.map(t=>({...t,score:context.test(normal.slice(Math.max(0,t.pos-90),t.pos+55))?2:0}));
+ranked.sort((x,y)=>y.score-x.score||x.pos-y.pos);
+if(ranked.length)$("scanMin").value=String(ranked[0].n);
+const upper=lines.map(x=>x.replace(/[|{}\\]/g," ").replace(/\s+/g," ").trim());
+const brand=/(assam|darjeeling|earl grey|ceylon|rooibos|sencha|matcha|oolong|brahmaputra|tinsukia|tetley|pg tips|williamson|english breakfast|afternoon)/i;
+const ignore=/(zutaten|mindestens haltbar|ingredients|boiling|minutes|minuten|water|wasser|schwarzer tee$|schwarzer tee \d|qualität|character|tee genießen|tea bag)/i;
+const candidates=upper.filter(x=>brand.test(x)&&!ignore.test(x));
+let name="";
+if(candidates.length){
+let best=candidates.sort((a,b)=>{
+const score=x=>(/brahmaputra|tinsukia|darjeeling|earl grey|english breakfast/i.test(x)?3:0)+(x.length<75?2:0)-(x.length>110?4:0);
+return score(b)-score(a);
+})[0];
+const m=best.match(/(?:assam|darjeeling|earl grey|ceylon|rooibos|sencha|matcha|oolong|brahmaputra|tinsukia|tetley|pg tips|williamson|english breakfast|traditional afternoon)[\w\s-]{0,48}/i);
+name=(m?m[0]:best).trim().replace(/\s+\d+\s*$/,"").slice(0,80);
+if(/brahmaputra/i.test(text)&&/assam/i.test(text))name="Assam Brahmaputra";
+}
+if(name)$("scanName").value=name;
 const patterns=[
 {re:/(\d+(?:[.,]\d+)?)\s*(?:teebeutel|tea\s*bags?|beutel)\s*(?:pro|per|für|for|\/)\s*(\d+(?:[.,]\d+)?)\s*(ml|l|liter)/i,unit:"bag"},
 {re:/(\d+(?:[.,]\d+)?)\s*(?:teelöffel|tsp|teaspoons?)\s*(?:pro|per|für|for|\/)\s*(\d+(?:[.,]\d+)?)\s*(ml|l|liter)/i,unit:"tsp"},
 {re:/(\d+(?:[.,]\d+)?)\s*(?:teemaß|teemass|tea\s*measure)\s*(?:pro|per|für|for|\/)\s*(\d+(?:[.,]\d+)?)\s*(ml|l|liter)/i,unit:"measure"},
 {re:/(\d+(?:[.,]\d+)?)\s*g(?:ramm)?\s*(?:pro|per|für|for|\/)\s*(\d+(?:[.,]\d+)?)\s*(ml|l|liter)/i,unit:"g"}
 ];
+let found=false;
 for(const p of patterns){const m=text.match(p.re);if(m){
 $("scanDose").value=m[1].replace(",",".");$("scanUnit").value=p.unit;
-$("scanBase").value=String(Number(m[2].replace(",","."))*(m[3].toLowerCase()==="ml"?1:1000));break;
+$("scanBase").value=String(Number(m[2].replace(",","."))*(m[3].toLowerCase()==="ml"?1:1000));
+$("scanType").value=p.unit==="bag"?"bag":"loose";found=true;break;
 }}
+if(!found){
+const loose=text.match(/(\d+(?:[.,]\d+)?)\s*(teebeutel|tea\s*bags?|teelöffel|tsp|teaspoons?|teemaß|teemass|g(?:ramm)?\b)/i);
+const water=text.match(/(\d+(?:[.,]\d+)?)\s*(ml|liter|litres?|l\b)/i);
+if(loose&&water){
+const u=loose[2].toLowerCase();
+const unit=/beutel|bags?/.test(u)?"bag":/teelöffel|tsp|teaspoon/.test(u)?"tsp":/teemaß|teemass/.test(u)?"measure":"g";
+$("scanDose").value=loose[1].replace(",",".");$("scanUnit").value=unit;
+$("scanBase").value=String(Number(water[1].replace(",","."))*(water[2].toLowerCase()==="ml"?1:1000));
+$("scanType").value=unit==="bag"?"bag":"loose";
 }
-$("scanRead").addEventListener("click",async()=>{
-const file=$("scanFile").files&&$("scanFile").files[0];if(!file)return;
-$("scanRead").disabled=true;$("scanFeedback").textContent="Texterkennung läuft …";
+}
+}
+let scanning=false;
+async function performScan(){
+const file=$("scanFile").files&&$("scanFile").files[0];if(!file||scanning)return;
+scanning=true;$("scanRead").disabled=true;
+$("scanFeedback").textContent="Foto wird ausgewertet …";
 ["scanName","scanDose","scanBase","scanMin"].forEach(id=>$(id).value="");
-$("scanUnit").value="";
+$("scanUnit").value="";$("scanType").value="loose";
 try{
-const ocr=await loadOcr();
+const ocr=await loadOcr();$("scanFeedback").textContent="Text wird erkannt …";
 const worker=await ocr.createWorker("deu+eng");
 let raw="";
 try{const result=await worker.recognize(file);raw=result.data.text||"";}finally{await worker.terminate();}
 $("scanRaw").textContent=raw||"Kein Text erkannt.";
 parseOcr(raw);
-$("scanStatus").textContent=raw.trim()?"Texterkennung abgeschlossen. Bitte alle Angaben prüfen.":"Kein lesbarer Text erkannt. Bitte Angaben manuell eintragen.";
+const missing=[["scanName","Name"],["scanDose","Dosierung"],["scanUnit","Einheit"],["scanBase","Wassermenge"],["scanMin","Ziehzeit"]].filter(([id])=>!$(id).value).map(x=>x[1]);
+$("scanStatus").textContent=missing.length?"Bitte prüfen und ergänzen: "+missing.join(", ")+".":"Angaben erkannt. Bitte vor dem Speichern mit der Packung vergleichen.";
 scanStage(true);$("scanFeedback").textContent="";
 }catch(e){
 $("scanRaw").textContent="Texterkennung nicht verfügbar.";
-$("scanStatus").textContent="Texterkennung fehlgeschlagen. Du kannst die Angaben trotzdem manuell eingeben.";
+$("scanStatus").textContent="Texterkennung fehlgeschlagen. Bitte Angaben manuell eintragen.";
 scanStage(true);$("scanFeedback").textContent="";
+}finally{scanning=false;$("scanRead").disabled=false;}
 }
-$("scanRead").disabled=false;
-});
+$("scanRead").addEventListener("click",performScan);
 $("scanBack").addEventListener("click",()=>scanStage(false));
 $("scanSave").addEventListener("click",()=>{
 const name=$("scanName").value.trim(),qty=Number($("scanDose").value),base=Number($("scanBase").value),mins=Number($("scanMin").value),unit=$("scanUnit").value,type=$("scanType").value;
