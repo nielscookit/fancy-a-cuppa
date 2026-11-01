@@ -182,6 +182,7 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 .preset,.volume{font-size:24px!important;font-weight:600!important}
 .volume{display:flex;align-items:center;justify-content:center}
 .volume:last-child{font-size:16px!important}
+.volume .custom-volume-icon{font-size:24px!important;font-weight:400!important;line-height:24px;display:flex;align-items:center;justify-content:center;width:24px;height:24px;color:inherit!important}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 </head>
@@ -408,7 +409,7 @@ const box=$("volumes");box.replaceChildren();
 volumeOptions.forEach(([id,label,ml])=>{
 const b=document.createElement("button");b.type="button";b.className="volume"+(id===volumeId?" active":"");
 b.setAttribute("aria-pressed",String(id===volumeId));
-if(ml!==null){b.textContent=format(ml);b.setAttribute("aria-label",label+", "+ml+" Milliliter");}else{b.textContent=label;}
+if(ml!==null){b.textContent=format(ml);b.setAttribute("aria-label",label+", "+ml+" Milliliter");}else{const icon=document.createElement("span");icon.className="material-symbols-outlined custom-volume-icon";icon.textContent="tune";icon.setAttribute("aria-hidden","true");b.append(icon);b.setAttribute("aria-label",label);}
 b.addEventListener("click",()=>{volumeId=id;renderVolumes();renderDose();});box.append(b);
 });
 $("customWrap").hidden=volumeId!=="custom";
