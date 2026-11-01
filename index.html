@@ -177,6 +177,11 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 .volume .material-symbols-outlined{font-size:24px!important;font-weight:400!important}
 .tea-trigger .tea-chevron{display:flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:24px!important;line-height:1;font-weight:400!important;flex:0 0 24px}
 .minute-label{font-size:16px!important}
+
+/* Numerische Presets und Wassermengen ohne Einheiten */
+.preset,.volume{font-size:24px!important;font-weight:600!important}
+.volume{display:flex;align-items:center;justify-content:center}
+.volume:last-child{font-size:16px!important}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 </head>
@@ -199,10 +204,10 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 <button id="plus" class="round" type="button" aria-label="Eine Minute mehr">+</button>
 </div>
 <div class="presets" role="group" aria-label="Ziehzeit wählen">
-<button type="button" class="preset" data-min="2">2 MIN</button>
-<button type="button" class="preset" data-min="3">3 MIN</button>
-<button type="button" class="preset" data-min="4">4 MIN</button>
-<button type="button" class="preset" data-min="5">5 MIN</button>
+<button type="button" class="preset" data-min="2" aria-label="2 Minuten">2</button>
+<button type="button" class="preset" data-min="3" aria-label="3 Minuten">3</button>
+<button type="button" class="preset" data-min="4" aria-label="4 Minuten">4</button>
+<button type="button" class="preset" data-min="5" aria-label="5 Minuten">5</button>
 </div>
 <div class="actions">
 <button id="start" type="button" class="primary">FANCY A CUPPA</button>
@@ -403,8 +408,7 @@ const box=$("volumes");box.replaceChildren();
 volumeOptions.forEach(([id,label,ml])=>{
 const b=document.createElement("button");b.type="button";b.className="volume"+(id===volumeId?" active":"");
 b.setAttribute("aria-pressed",String(id===volumeId));
-const name=document.createElement("strong");if(id==="cup"||id==="smallpot"||id==="pot"||id==="largepot"){const icon=document.createElement("span");icon.className="material-symbols-outlined";icon.textContent=id==="cup"?"coffee":"kettle";icon.setAttribute("aria-hidden","true");name.append(icon);b.setAttribute("aria-label",label+", "+ml+" Milliliter");}else{name.textContent=label;}b.append(name);
-const sub=document.createElement("span");sub.textContent=ml===null?"ml eingeben":format(ml)+" ml";b.append(sub);
+if(ml!==null){b.textContent=format(ml);b.setAttribute("aria-label",label+", "+ml+" Milliliter");}else{b.textContent=label;}
 b.addEventListener("click",()=>{volumeId=id;renderVolumes();renderDose();});box.append(b);
 });
 $("customWrap").hidden=volumeId!=="custom";
