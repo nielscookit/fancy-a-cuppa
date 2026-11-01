@@ -192,6 +192,8 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 /* Primary-Farbe für Speichern ohne Größenänderung */
 #saveTea{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important}
 .minute-label{word-spacing:-5px}
+.round{display:flex;align-items:center;justify-content:center}
+.round .stepper-icon{display:flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:24px!important;line-height:24px;font-weight:400!important;color:inherit}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 </head>
@@ -209,9 +211,9 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 </div>
 </div>
 <div class="stepper">
-<button id="minus" class="round" type="button" aria-label="Eine Minute weniger">−</button>
+<button id="minus" class="round" type="button" aria-label="Eine Minute weniger"><span class="material-symbols-outlined stepper-icon" aria-hidden="true">remove</span></button>
 <div id="minuteLabel" class="minute-label">4 MIN</div>
-<button id="plus" class="round" type="button" aria-label="Eine Minute mehr">+</button>
+<button id="plus" class="round" type="button" aria-label="Eine Minute mehr"><span class="material-symbols-outlined stepper-icon" aria-hidden="true">add</span></button>
 </div>
 <div class="presets" role="group" aria-label="Ziehzeit wählen">
 <button type="button" class="preset" data-min="2" aria-label="2 Minuten">2</button>
@@ -266,9 +268,9 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 </div>
 <div class="brew-step">
 <div class="stepper">
-<button id="brewMinus" class="round" type="button" aria-label="Ziehzeit verringern">−</button>
+<button id="brewMinus" class="round" type="button" aria-label="Ziehzeit verringern"><span class="material-symbols-outlined stepper-icon" aria-hidden="true">remove</span></button>
 <div id="brewMinutes" class="minute-label">4 MIN</div>
-<button id="brewPlus" class="round" type="button" aria-label="Ziehzeit erhöhen">+</button>
+<button id="brewPlus" class="round" type="button" aria-label="Ziehzeit erhöhen"><span class="material-symbols-outlined stepper-icon" aria-hidden="true">add</span></button>
 </div>
 </div>
 <button id="brewStart" class="primary brew-action" type="button">TIMER STARTEN · 4 MIN</button>
