@@ -156,11 +156,20 @@ background:#333333!important;color:#fff!important;border:0!important;outline:non
 .timer .presets{margin-bottom:22px}
 .timer .actions .primary{min-height:66px;padding:20px 12px}
 .dose-toggle{margin-top:22px}
+
+/* Ohne redundante Überschrift: Timer weiter nach oben */
+main{padding-top:12px}
+.timer .dial{margin-top:0}
+@media(max-height:740px){
+.timer .dial{width:min(245px,72vw)}
+.timer .stepper{margin-top:8px;margin-bottom:12px}
+.timer .presets{margin-bottom:14px}
+.dose-toggle{margin-top:14px}
+}
 </style>
 </head>
 <body>
 <main>
-<header><h1>Fancy a Cuppa</h1></header>
 <section class="timer" aria-label="Tee-Timer">
 <div class="dial">
 <svg viewBox="0 0 240 240" aria-hidden="true">
