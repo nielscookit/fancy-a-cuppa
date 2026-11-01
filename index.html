@@ -119,6 +119,13 @@ button:focus-visible,.tea-option .tea-remove:focus-visible{outline-color:var(--a
 /* Presets im 2x2-Raster; Selected State 3px */
 .presets{grid-template-columns:repeat(2,minmax(0,1fr))}
 .preset.active,.volume.active,.preset.active:focus-visible,.volume.active:focus-visible{outline-width:3px!important;outline-offset:-3px}
+
+/* Preset-Kacheln identisch zu den Wassermengen; Ziehzeit zentriert */
+.preset{min-height:59px;padding:10px 7px}
+.brew-step{justify-content:center;margin-top:22px}
+.brew-step .stepper{gap:12px}
+.brew-step .minute-label{min-width:92px}
+.divider{margin-top:24px}
 </style>
 </head>
 <body>
@@ -181,7 +188,7 @@ button:focus-visible,.tea-option .tea-remove:focus-visible{outline-color:var(--a
 <label><span id="freeDoseLabel" class="field-label">TEEMAẞ PRO LITER</span><input id="freeDose" type="number" min="0.1" max="100" step="0.1" value="6" inputmode="decimal"></label>
 <button id="saveTea" type="button" class="scan">TEE SPEICHERN</button>
 </div>
-<div id="teaDetails" hidden><div class="section-title">WASSERMENGE</div>
+<div id="teaDetails" hidden>
 <div class="volumes" id="volumes" role="group" aria-label="Wassermenge"></div>
 <label id="customWrap" hidden><span class="field-label" style="margin-top:12px">EIGENE WASSERMENGE IN ML</span><input id="customMl" type="number" min="50" max="5000" step="10" value="600" inputmode="numeric"></label>
 <div class="result">
@@ -189,9 +196,7 @@ button:focus-visible,.tea-option .tea-remove:focus-visible{outline-color:var(--a
 <strong id="doseResult"></strong>
 <p id="doseHint" class="hint"></p>
 </div>
-<div class="section-title">ZIEHZEIT</div>
 <div class="brew-step">
-<span class="hint">Empfehlung, anpassbar</span>
 <div class="stepper">
 <button id="brewMinus" class="round" type="button" aria-label="Ziehzeit verringern">−</button>
 <div id="brewMinutes" class="minute-label">4 MIN</div>
