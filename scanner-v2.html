@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#faf9f6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Fancy a Cuppa">
+<title>Fancy a Cuppa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{font-family:"Roboto Mono",monospace;color:#1d1d1d;background:#faf9f6;font-size:13px}
+*{box-sizing:border-box}
+body{margin:0}
+main{max-width:480px;margin:auto;padding:28px 20px max(45px,env(safe-area-inset-bottom))}
+header{text-align:center;margin:0 0 24px}
+h1{font-size:22px;font-weight:500;letter-spacing:-1px;margin:0}
+.timer{text-align:center}
+.dial{width:min(285px,82vw);aspect-ratio:1;margin:8px auto 15px;position:relative}
+.dial svg{width:100%;height:100%;transform:rotate(-90deg)}
+.dial circle{fill:none;stroke-width:6}
+.track{stroke:#e9e7e3}
+.progress{stroke:#e34840;stroke-linecap:round;transition:stroke-dashoffset .18s linear}
+.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.clock{font-family:Roboto,Arial,sans-serif;font-size:clamp(54px,14vw,68px);font-weight:700;line-height:1;letter-spacing:-2px;font-variant-numeric:tabular-nums}
+.state{font-size:14px;font-weight:500;letter-spacing:1.7px;color:#777}
+button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:focus-visible{outline:2px solid #e34840;outline-offset:3px}
+.stepper{display:flex;align-items:center;justify-content:center;gap:22px;margin:12px 0 20px}
+.round{height:44px;width:44px;border:1px solid #dfdcd7;background:#fff;border-radius:50%;font-size:23px;line-height:1}
+.round:disabled{opacity:.35}
+.minute-label{min-width:80px;text-align:center;font-weight:500}
+.presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:13px}
+.preset{padding:13px 2px;background:#fff;border:1px solid #e5e1dc;border-radius:12px;font-size:12px;font-weight:500}
+.preset.active{background:#222;color:#fff;border-color:#222}
+.actions{display:flex;gap:9px}
+.primary{flex:1;background:#e34840;color:white;border:0;border-radius:13px;padding:16px 12px;font-weight:600;min-height:52px}
+.secondary{background:#eeeae6;color:#222;border:0;border-radius:13px;padding:14px 17px;font-weight:500}
+.secondary[hidden]{display:none}
+.message{min-height:20px;margin:14px 0 0;text-align:center;font-size:12px;color:#777}
+.scan-panel{border:1px solid #e4e0da;background:#fff;border-radius:14px;padding:16px;margin-top:12px}
+.scan-panel h2{font-size:13px;font-weight:600;margin:0 0 12px}
+.scan-panel label{display:block;margin:12px 0}
+.scan-panel input,.scan-panel select{width:100%}
+.scan-actions{display:flex;gap:8px;margin-top:14px}
+.scan-actions button{flex:1;border:1px solid #e4e0da;background:#f7f6f4;border-radius:11px;padding:13px}
+.scan-actions .confirm{background:#e34840;color:#fff;border-color:#e34840}
+.scan-panel .hint{overflow-wrap:anywhere}
+.scan-preview{max-width:100%;max-height:200px;object-fit:contain;display:block;margin:10px auto}
+.section-title{font-size:12px;font-weight:600;letter-spacing:1px;margin:22px 0 11px}
+.scan{width:100%;border:1px solid #dedad5;border-radius:13px;background:white;padding:17px;font-weight:600;text-align:center}
+select,input{font:inherit;min-height:48px;width:100%;border:1px solid #e0ddd8;border-radius:11px;background:white;color:#222;padding:11px}
+select{appearance:auto}
+.volumes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.volume{min-height:59px;background:white;border:1px solid #e4e0da;border-radius:11px;padding:10px 7px;text-align:center;font-size:11px}
+.volume span{display:block;color:#777;margin-top:5px}
+.volume.active{border-color:#e34840;background:#fff6f4}
+.volume.active span{color:#a33a34}
+.result{border:1px solid #e9e5e0;background:#fff;border-radius:13px;padding:15px;margin-top:12px}
+.result strong{display:block;font-size:19px;font-weight:600;margin:8px 0}
+.hint{font-size:11px;color:#777;line-height:1.6;margin:8px 0 0}
+.brew-step{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brew-step .stepper{margin:0;gap:12px}
+.brew-step .minute-label{min-width:55px}
+.brew-action{width:100%;margin-top:14px}
+.free-fields{display:grid;gap:10px;margin-top:12px}
+.field-label{display:block;font-size:11px;color:#666;margin-bottom:6px}
+[hidden]{display:none!important}
+.divider{height:1px;background:#e8e5e0;margin:27px 0 20px}
+.test{width:100%;padding:13px;border:1px solid #e5e1dc;border-radius:12px;background:#fff;color:#555;font-size:12px}
+footer{text-align:center;color:#999;font-size:11px;line-height:1.7;margin-top:18px}
+@media(prefers-reduced-motion:reduce){.progress{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>Fancy a Cuppa</h1></header>
+<section class="timer" aria-label="Tee-Timer">
+<div class="dial">
+<svg viewBox="0 0 240 240" aria-hidden="true">
+<circle class="track" cx="120" cy="120" r="105"></circle>
+<circle id="progress" class="progress" cx="120" cy="120" r="105"></circle>
+</svg>
+<div class="center">
+<div id="clock" class="clock" role="timer" aria-label="Verbleibende Zeit">04:00</div>
+<div id="state" class="state">BREW TIME</div>
+</div>
+</div>
+<div class="stepper">
+<button id="minus" class="round" type="button" aria-label="Eine Minute weniger">−</button>
+<div id="minuteLabel" class="minute-label">4 MIN</div>
+<button id="plus" class="round" type="button" aria-label="Eine Minute mehr">+</button>
+</div>
+<div class="presets" role="group" aria-label="Ziehzeit wählen">
+<button type="button" class="preset" data-min="2">2 MIN</button>
+<button type="button" class="preset" data-min="3">3 MIN</button>
+<button type="button" class="preset" data-min="4">4 MIN</button>
+<button type="button" class="preset" data-min="5">5 MIN</button>
+</div>
+<div class="actions">
+<button id="start" type="button" class="primary">▶ TIMER STARTEN</button>
+<button id="reset" type="button" class="secondary" hidden>↺ RESET</button>
+</div>
+<p id="message" class="message" role="status" aria-live="polite"></p>
+</section>
+<div class="divider"></div>
+<section aria-label="Teezubereitung">
+<button id="scan" type="button" class="scan" aria-label="Tee scannen">▣ TEE SCANNEN</button>
+<div id="scanPanel" class="scan-panel" hidden>
+<h2 id="scanHeading">1 / FOTOGRAFIEREN</h2>
+<div id="scanCapture">
+<p class="hint">Fotografiere die Zubereitungshinweise. Die Texterkennung beginnt nach der Aufnahme automatisch.</p>
+<input id="scanFile" type="file" accept="image/*" capture="environment" aria-label="Teepackung fotografieren" hidden>
+<img id="scanPreview" class="scan-preview" alt="Ausgewähltes Verpackungsfoto" hidden>
+<button id="scanRead" type="button" class="scan" hidden>ERNEUT ERKENNEN</button>
+</div>
+<div id="scanReview" hidden>
+<p id="scanStatus" class="hint" role="status"></p>
+<label><span class="field-label">TEE-NAME (PFLICHT)</span><input id="scanName" maxlength="80" placeholder="z. B. Assam ..."></label>
+<label><span class="field-label">TEEART</span><select id="scanType"><option value="loose">Loser Tee</option><option value="bag">Teebeutel</option></select></label>
+<label><span class="field-label">DOSIERUNG – MENGE</span><input id="scanDose" type="number" min="0.1" max="1000" step="any" inputmode="decimal" placeholder="Bitte prüfen / eintragen"></label>
+<label><span class="field-label">EINHEIT (WIE AUF DER PACKUNG)</span><select id="scanUnit"><option value="">Bitte auswählen</option><option value="measure">TeaGschwendner-Teemaß</option><option value="tsp">Teelöffel</option><option value="g">Gramm</option><option value="bag">Teebeutel</option></select></label>
+<label><span class="field-label">FÜR WASSERMENGE (ML)</span><input id="scanBase" type="number" min="50" max="5000" step="any" inputmode="numeric" placeholder="z. B. 250"></label>
+<label><span class="field-label">ZIEHZEIT (MINUTEN)</span><input id="scanMin" type="number" min="1" max="60" step="1" inputmode="numeric" placeholder="Bitte prüfen / eintragen"></label>
+<p class="hint">Erkannte Werte sind Vorschläge. Bitte mit der Packung vergleichen. Unterschiedliche Löffelarten werden nicht gleichgesetzt.</p>
+<details><summary>Erkannten Text ansehen</summary><p id="scanRaw" class="hint"></p></details>
+<div class="scan-actions"><button id="scanBack" type="button">ZURÜCK</button><button id="scanSave" class="confirm" type="button">3 / SPEICHERN</button></div>
+</div>
+<p id="scanFeedback" class="hint" role="status"></p>
+</div>
+<div class="section-title">TEE AUSWÄHLEN</div>
+<select id="teaSelect" aria-label="Tee auswählen"></select>
+<div id="freeFields" class="free-fields" hidden>
+<label><span class="field-label">TEE-NAME</span><input id="freeName" maxlength="80" value="Eigener Tee"></label>
+<label><span class="field-label">TEEART</span><select id="freeType"><option value="loose">Loser Tee</option><option value="bag">Teebeutel</option></select></label>
+<label><span id="freeDoseLabel" class="field-label">TEEMAẞ PRO LITER</span><input id="freeDose" type="number" min="0.1" max="100" step="0.1" value="6" inputmode="decimal"></label>
+<button id="saveTea" type="button" class="scan">+ TEE SPEICHERN</button>
+</div>
+<div class="section-title">WASSERMENGE</div>
+<div class="volumes" id="volumes" role="group" aria-label="Wassermenge"></div>
+<label id="customWrap" hidden><span class="field-label" style="margin-top:12px">EIGENE WASSERMENGE IN ML</span><input id="customMl" type="number" min="50" max="5000" step="10" value="600" inputmode="numeric"></label>
+<div class="result">
+<div class="section-title" style="margin:0">DOSIERUNG</div>
+<strong id="doseResult"></strong>
+<p id="doseHint" class="hint"></p>
+</div>
+<div class="section-title">ZIEHZEIT</div>
+<div class="brew-step">
+<span class="hint">Empfehlung, anpassbar</span>
+<div class="stepper">
+<button id="brewMinus" class="round" type="button" aria-label="Ziehzeit verringern">−</button>
+<div id="brewMinutes" class="minute-label">4 MIN</div>
+<button id="brewPlus" class="round" type="button" aria-label="Ziehzeit erhöhen">+</button>
+</div>
+</div>
+<button id="brewStart" class="primary brew-action" type="button">▶ TIMER STARTEN · 4 MIN</button>
+<p id="brewMessage" class="hint" role="status"></p>
+</section>
+<button id="testSound" type="button" class="test">▶ STIMME TESTEN</button>
+<footer>Die Sprachausgabe kann durch iOS eingeschränkt sein.<br>Für eine zuverlässigere Wiedergabe die App geöffnet lassen.</footer>
+</main>
+<script>
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+const circumference=2*Math.PI*105;
+$("progress").style.strokeDasharray=String(circumference);
+const voice=new Audio("./tea-finished.mp3");
+voice.preload="auto";
+let chosen=4,total=240,remaining=240,deadline=0,running=false,finished=false,ticker=null;
+function clock(sec){
+const n=Math.max(0,Math.ceil(sec));
+return String(Math.floor(n/60)).padStart(2,"0")+":"+String(n%60).padStart(2,"0");
+}
+function draw(){
+$("clock").textContent=clock(remaining);
+$("progress").style.strokeDashoffset=String(circumference*(1-Math.min(1,Math.max(0,remaining/total))));
+$("minuteLabel").textContent=chosen+" MIN";
+document.querySelectorAll(".preset").forEach(b=>{
+const active=Number(b.dataset.min)===chosen;
+b.classList.toggle("active",active);
+b.setAttribute("aria-pressed",String(active));
+});
+$("minus").disabled=chosen<=1;
+$("plus").disabled=chosen>=60;
+$("start").textContent=running?"Ⅱ PAUSIEREN":finished?"↺ NEU STARTEN":remaining<total?"▶ FORTSETZEN":"▶ TIMER STARTEN";
+$("reset").hidden=!(running||remaining<total||finished);
+$("state").textContent=finished?"TEA IS READY":running?"BREWING":"BREW TIME";
+}
+function clearTicker(){if(ticker!==null){clearInterval(ticker);ticker=null;}}
+function stop(){clearTicker();running=false;}
+function setTime(min){
+stop();chosen=Math.max(1,Math.min(60,min));total=remaining=chosen*60;finished=false;
+$("message").textContent="";
+draw();
+}
+function reset(){setTime(chosen);}
+function playVoice(){
+voice.pause();voice.currentTime=0;voice.muted=false;voice.volume=1;
+return voice.play();
+}
+function unlockVoice(){
+voice.pause();voice.currentTime=0;voice.muted=true;
+const p=voice.play();
+if(p&&typeof p.then==="function"){
+p.then(()=>{voice.pause();voice.currentTime=0;voice.muted=false;}).catch(()=>{voice.muted=false;});
+}else{voice.muted=false;}
+}
+function tick(){
+if(!running)return;
+remaining=Math.max(0,(deadline-Date.now())/1000);
+if(remaining<=0){
+stop();remaining=0;finished=true;
+$("message").textContent="Dein Tee ist fertig.";
+draw();
+playVoice().catch(()=>{$("message").textContent="Dein Tee ist fertig. Sprachausgabe wurde blockiert.";});
+return;
+}
+draw();
+}
+$("start").addEventListener("click",()=>{
+if(running){tick();if(!running)return;stop();$("message").textContent="Pausiert.";draw();return;}
+if(finished){remaining=total;finished=false;}
+unlockVoice();
+running=true;deadline=Date.now()+remaining*1000;
+$("message").textContent="";
+tick();ticker=setInterval(tick,200);
+});
+$("reset").addEventListener("click",reset);
+$("minus").addEventListener("click",()=>setTime(chosen-1));
+$("plus").addEventListener("click",()=>setTime(chosen+1));
+document.querySelectorAll(".preset").forEach(b=>b.addEventListener("click",()=>setTime(Number(b.dataset.min))));
+$("testSound").addEventListener("click",()=>{
+playVoice().then(()=>{$("message").textContent="Sprachdatei wird abgespielt.";})
+.catch(()=>{$("message").textContent="Sprachdatei konnte nicht abgespielt werden.";});
+});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&running)tick();});
+const builtins=[
+{id:"ctc",name:"Assam CTC Tinsukia · TeaGschwendner 109",type:"loose",dose:6,min:4,provisional:true},
+{id:"brahmaputra",name:"Assam Brahmaputra Malty · TeaGschwendner 125",type:"loose",dose:6,min:5,provisional:true},
+{id:"williamson",name:"Traditional Afternoon · Williamson",type:"loose",dose:6,min:4,provisional:true},
+{id:"tetley",name:"Tetley",type:"bag",dose:4,min:3,provisional:true},
+{id:"pgtips",name:"PG Tips",type:"bag",dose:4,min:3,provisional:true}
+];
+const volumeOptions=[["cup","Tasse",250],["largecup","Große Tasse",350],["smallpot","Kleine Kanne",500],["myPot","Meine Kanne",600],["pot","Kanne",1000],["largepot","Große Kanne",1500],["custom","Eigene Menge",null]];
+let saved=[];
+try{const data=JSON.parse(localStorage.getItem("fancy-cuppa-teas-v1")||"[]");if(Array.isArray(data))saved=data.filter(t=>t&&typeof t.name==="string"&&["loose","bag"].includes(t.type)&&Number.isFinite(t.dose)&&t.dose>0&&Number.isFinite(t.min)&&t.min>=1);}catch(e){}
+let selectedTea="ctc",volumeId="myPot",brewMin=4;
+function activeTea(){return [...builtins,...saved].find(t=>t.id===selectedTea)||builtins[0];}
+function selectedMl(){return volumeId==="custom"?Number($("customMl").value):volumeOptions.find(v=>v[0]===volumeId)[2];}
+function format(n){return n.toLocaleString("de-DE",{maximumFractionDigits:2});}
+function renderTeas(){
+const sel=$("teaSelect");sel.replaceChildren();
+[...builtins,...saved].forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent=t.name;sel.append(o);});
+const free=document.createElement("option");free.value="free";free.textContent="+ Freie Dosierung";sel.append(free);sel.value=selectedTea;
+}
+function renderVolumes(){
+const box=$("volumes");box.replaceChildren();
+volumeOptions.forEach(([id,label,ml])=>{
+const b=document.createElement("button");b.type="button";b.className="volume"+(id===volumeId?" active":"");
+b.setAttribute("aria-pressed",String(id===volumeId));
+const name=document.createElement("strong");name.textContent=label;b.append(name);
+const sub=document.createElement("span");sub.textContent=ml===null?"ml eingeben":format(ml)+" ml";b.append(sub);
+b.addEventListener("click",()=>{volumeId=id;renderVolumes();renderDose();});box.append(b);
+});
+$("customWrap").hidden=volumeId!=="custom";
+}
+function renderDose(){
+const tea=activeTea(),ml=selectedMl();
+const valid=Number.isFinite(ml)&&ml>=50&&ml<=5000;
+$("doseResult").textContent=!valid?"Wassermenge prüfen":tea.type==="bag"?format(Math.ceil(ml*tea.dose/1000))+" Teebeutel":format(Math.round(ml*tea.dose/100)/10)+(tea.unit==="g"?" g":tea.unit==="tsp"?" TL":" Teemaß");
+$("doseHint").textContent=tea.type==="bag"?"Basis: "+format(tea.dose)+" Beutel pro Liter (aufgerundet).":"Basis: "+format(tea.dose)+(tea.unit==="g"?" g":tea.unit==="tsp"?" Teelöffel":" gestrichene TeaGschwendner-Teemaß")+" pro Liter.";
+if(tea.provisional)$("doseHint").textContent+=" Richtwert – bitte Packungsangabe prüfen.";
+$("brewMinutes").textContent=brewMin+" MIN";
+$("brewMinus").disabled=brewMin<=1;$("brewPlus").disabled=brewMin>=60;
+$("brewStart").textContent="▶ TIMER STARTEN · "+brewMin+" MIN";
+$("brewStart").disabled=!valid;
+$("freeDoseLabel").textContent=$("freeType").value==="bag"?"TEEBEUTEL PRO LITER":"TEEMAẞ PRO LITER";
+}
+function selectTea(){
+$("freeFields").hidden=selectedTea!=="free";
+if(selectedTea!=="free")brewMin=activeTea().min;
+renderDose();
+}
+$("teaSelect").addEventListener("change",()=>{selectedTea=$("teaSelect").value;selectTea();});
+$("customMl").addEventListener("input",renderDose);
+$("brewMinus").addEventListener("click",()=>{brewMin=Math.max(1,brewMin-1);renderDose();});
+$("brewPlus").addEventListener("click",()=>{brewMin=Math.min(60,brewMin+1);renderDose();});
+$("freeType").addEventListener("change",renderDose);
+$("brewStart").addEventListener("click",()=>{
+if($("brewStart").disabled)return;
+setTime(brewMin);
+$("start").click();
+window.scrollTo({top:0,behavior:"smooth"});
+});
+$("saveTea").addEventListener("click",()=>{
+const name=$("freeName").value.trim(),dose=Number($("freeDose").value);
+if(!name||!Number.isFinite(dose)||dose<=0||dose>100){$("brewMessage").textContent="Bitte Namen und gültige Dosierung eingeben.";return;}
+const id="saved-"+Date.now();
+saved.push({id,name,type:$("freeType").value,dose,min:brewMin,provisional:false});
+try{localStorage.setItem("fancy-cuppa-teas-v1",JSON.stringify(saved));}catch(e){$("brewMessage").textContent="Speichern im Browser nicht möglich.";return;}
+selectedTea=id;renderTeas();selectTea();$("brewMessage").textContent="Tee auf diesem Gerät gespeichert.";
+});
+$("scan").addEventListener("click",()=>{
+scanStage(false);
+$("scanPanel").hidden=false;
+$("scanFile").value="";
+$("scanFile").click();
+});
+let scanObjectUrl=null;
+$("scanFile").addEventListener("change",()=>{
+const file=$("scanFile").files&&$("scanFile").files[0];
+if(scanObjectUrl)URL.revokeObjectURL(scanObjectUrl);
+scanObjectUrl=file?URL.createObjectURL(file):null;
+$("scanPreview").hidden=!file;
+if(file){$("scanPreview").src=scanObjectUrl;performScan();}
+$("scanRead").disabled=!file;
+$("scanFeedback").textContent="";
+});
+function scanStage(review){
+$("scanCapture").hidden=review;$("scanReview").hidden=!review;
+$("scanHeading").textContent=review?"2 / PRÜFEN":"1 / FOTOGRAFIEREN";
+}
+function loadOcr(){
+return new Promise((resolve,reject)=>{
+if(window.Tesseract){resolve(window.Tesseract);return;}
+const script=document.createElement("script");
+script.src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+script.onload=()=>window.Tesseract?resolve(window.Tesseract):reject(Error("OCR fehlt"));
+script.onerror=()=>reject(Error("OCR konnte nicht geladen werden"));
+document.head.append(script);
+});
+}
+function parseOcr(raw){
+const lines=raw.split(/\n/).map(x=>x.trim()).filter(Boolean);
+const text=raw.replace(/\s+/g," ");
+const normal=text.replace(/(\d)\s+(Minuten|minutes|mins?|min\b)/gi,"$1 $2");
+const times=[...normal.matchAll(/(\d{1,2})(?:\s*[-–]\s*(\d{1,2}))?\s*(?:minuten|minutes|mins?|min\b)/gi)]
+.map(m=>({n:Number(m[1]),pos:m.index||0}))
+.filter(m=>m.n>=1&&m.n<=20);
+const context=/(zieh|brew|steep|kochend|water|aufguss|ziehen)/i;
+const ranked=times.map(t=>({...t,score:context.test(normal.slice(Math.max(0,t.pos-90),t.pos+55))?2:0}));
+ranked.sort((x,y)=>y.score-x.score||x.pos-y.pos);
+if(ranked.length)$("scanMin").value=String(ranked[0].n);
+const upper=lines.map(x=>x.replace(/[|{}\\]/g," ").replace(/\s+/g," ").trim());
+const brand=/(assam|darjeeling|earl grey|ceylon|rooibos|sencha|matcha|oolong|brahmaputra|tinsukia|tetley|pg tips|williamson|english breakfast|afternoon)/i;
+const ignore=/(zutaten|mindestens haltbar|ingredients|boiling|minutes|minuten|water|wasser|schwarzer tee$|schwarzer tee \d|qualität|character|tee genießen|tea bag)/i;
+const candidates=upper.filter(x=>brand.test(x)&&!ignore.test(x));
+let name="";
+if(candidates.length){
+let best=candidates.sort((a,b)=>{
+const score=x=>(/brahmaputra|tinsukia|darjeeling|earl grey|english breakfast/i.test(x)?3:0)+(x.length<75?2:0)-(x.length>110?4:0);
+return score(b)-score(a);
+})[0];
+const m=best.match(/(?:assam|darjeeling|earl grey|ceylon|rooibos|sencha|matcha|oolong|brahmaputra|tinsukia|tetley|pg tips|williamson|english breakfast|traditional afternoon)[\w\s-]{0,48}/i);
+name=(m?m[0]:best).trim().replace(/\s+\d+\s*$/,"").slice(0,80);
+if(/brahmaputra/i.test(text)&&/assam/i.test(text))name="Assam Brahmaputra";
+}
+if(name)$("scanName").value=name;
+const patterns=[
+{re:/(\d+(?:[.,]\d+)?)\s*(?:teebeutel|tea\s*bags?|beutel)\s*(?:pro|per|für|for|\/)\s*(\d+(?:[.,]\d+)?)\s*(ml|l|liter)/i,unit:"bag"},
+{re:/(\d+(?:[.,]\d+)?)\s*(?:teelöffel|tsp|teaspoons?)\s*(?:pro|per|für|for|\/)\s*(\d+(?:[.,]\d+)?)\s*(ml|l|liter)/i,unit:"tsp"},
+{re:/(\d+(?:[.,]\d+)?)\s*(?:teemaß|teemass|tea\s*measure)\s*(?:pro|per|für|for|\/)\s*(\d+(?:[.,]\d+)?)\s*(ml|l|liter)/i,unit:"measure"},
+{re:/(\d+(?:[.,]\d+)?)\s*g(?:ramm)?\s*(?:pro|per|für|for|\/)\s*(\d+(?:[.,]\d+)?)\s*(ml|l|liter)/i,unit:"g"}
+];
+let found=false;
+for(const p of patterns){const m=text.match(p.re);if(m){
+$("scanDose").value=m[1].replace(",",".");$("scanUnit").value=p.unit;
+$("scanBase").value=String(Number(m[2].replace(",","."))*(m[3].toLowerCase()==="ml"?1:1000));
+$("scanType").value=p.unit==="bag"?"bag":"loose";found=true;break;
+}}
+if(!found){
+const loose=text.match(/(\d+(?:[.,]\d+)?)\s*(teebeutel|tea\s*bags?|teelöffel|tsp|teaspoons?|teemaß|teemass|g(?:ramm)?\b)/i);
+const water=text.match(/(\d+(?:[.,]\d+)?)\s*(ml|liter|litres?|l\b)/i);
+if(loose&&water){
+const u=loose[2].toLowerCase();
+const unit=/beutel|bags?/.test(u)?"bag":/teelöffel|tsp|teaspoon/.test(u)?"tsp":/teemaß|teemass/.test(u)?"measure":"g";
+$("scanDose").value=loose[1].replace(",",".");$("scanUnit").value=unit;
+$("scanBase").value=String(Number(water[1].replace(",","."))*(water[2].toLowerCase()==="ml"?1:1000));
+$("scanType").value=unit==="bag"?"bag":"loose";
+}
+}
+}
+let scanning=false;
+async function performScan(){
+const file=$("scanFile").files&&$("scanFile").files[0];if(!file||scanning)return;
+scanning=true;$("scanRead").disabled=true;
+$("scanFeedback").textContent="Foto wird ausgewertet …";
+["scanName","scanDose","scanBase","scanMin"].forEach(id=>$(id).value="");
+$("scanUnit").value="";$("scanType").value="loose";
+try{
+const ocr=await loadOcr();$("scanFeedback").textContent="Text wird erkannt …";
+const worker=await ocr.createWorker("deu+eng");
+let raw="";
+try{const result=await worker.recognize(file);raw=result.data.text||"";}finally{await worker.terminate();}
+$("scanRaw").textContent=raw||"Kein Text erkannt.";
+parseOcr(raw);
+const missing=[["scanName","Name"],["scanDose","Dosierung"],["scanUnit","Einheit"],["scanBase","Wassermenge"],["scanMin","Ziehzeit"]].filter(([id])=>!$(id).value).map(x=>x[1]);
+$("scanStatus").textContent=missing.length?"Bitte prüfen und ergänzen: "+missing.join(", ")+".":"Angaben erkannt. Bitte vor dem Speichern mit der Packung vergleichen.";
+scanStage(true);$("scanFeedback").textContent="";
+}catch(e){
+$("scanRaw").textContent="Texterkennung nicht verfügbar.";
+$("scanStatus").textContent="Texterkennung fehlgeschlagen. Bitte Angaben manuell eintragen.";
+scanStage(true);$("scanFeedback").textContent="";
+}finally{scanning=false;$("scanRead").disabled=false;}
+}
+$("scanRead").addEventListener("click",performScan);
+$("scanBack").addEventListener("click",()=>scanStage(false));
+$("scanSave").addEventListener("click",()=>{
+const name=$("scanName").value.trim(),qty=Number($("scanDose").value),base=Number($("scanBase").value),mins=Number($("scanMin").value),unit=$("scanUnit").value,type=$("scanType").value;
+if(!name||!unit||!Number.isFinite(qty)||qty<=0||!Number.isFinite(base)||base<50||base>5000||!Number.isInteger(mins)||mins<1||mins>60){
+$("scanFeedback").textContent="Bitte Name, Dosierung, Einheit, Wassermenge und Ziehzeit vollständig prüfen.";return;
+}
+if((type==="bag")!==(unit==="bag")){
+$("scanFeedback").textContent="Teeart und Dosierungseinheit müssen zusammenpassen.";return;
+}
+const dose=qty*1000/base;
+if(dose<=0||dose>1000){$("scanFeedback").textContent="Dosierung liegt außerhalb des zulässigen Bereichs.";return;}
+const tea={id:"scan-"+Date.now(),name,type,dose,min:mins,unit,provisional:false};
+const next=[...saved,tea];
+try{localStorage.setItem("fancy-cuppa-teas-v1",JSON.stringify(next));}catch(e){$("scanFeedback").textContent="Lokales Speichern ist nicht möglich.";return;}
+saved=next;selectedTea=tea.id;brewMin=mins;renderTeas();selectTea();
+$("scanPanel").hidden=true;$("brewMessage").textContent="Tee gespeichert und ausgewählt.";
+$("teaSelect").scrollIntoView({behavior:"smooth",block:"center"});
+});
+
+renderTeas();renderVolumes();selectTea();
+draw();
+})();
+</script>
+</body>
+</html>
