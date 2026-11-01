@@ -73,6 +73,21 @@ select{appearance:auto}
 .test{width:100%;padding:13px;border:1px solid #e5e1dc;border-radius:12px;background:#fff;color:#555;font-size:12px}
 footer{text-align:center;color:#999;font-size:11px;line-height:1.7;margin-top:18px}
 @media(prefers-reduced-motion:reduce){.progress{transition:none}}
+
+/* Einheitlicher Control-Stil; Struktur und Anordnung bleiben unverändert. */
+.round{width:64px;height:64px;background:#ecebea;color:#292929;border:0}
+.preset,.scan-choices .scan-action,.tea-trigger,.volume,.scan,.scan-actions button:not(.confirm),select,input{
+background:#ecebea;color:#292929;border:0;box-shadow:none;
+}
+.preset.active,.volume.active{background:#c8c6c4;color:#191919;border:0}
+.volume.active span{color:#292929}
+.scan-choices .scan-action{border-radius:14px}
+.tea-trigger{border-radius:14px}
+.volume{border-radius:14px}
+.scan-panel input,.scan-panel select{background:#ecebea;border:0}
+.tea-menu{background:#f5f4f2}
+.tea-option .tea-choice{color:#292929}
+.tea-option .tea-remove{color:#6b3431}
 </style>
 </head>
 <body>
