@@ -189,6 +189,8 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 .hint,.message,footer,.field-label{font-size:14px!important}
 /* Abstand zwischen freier Dosierung und Wassermengenauswahl */
 .free-fields:not([hidden]) + #teaDetails:not([hidden]){margin-top:16px}
+/* Primary-Farbe für Speichern ohne Größenänderung */
+#saveTea{background:var(--accent)!important;color:#fff!important;border-color:var(--accent)!important}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 </head>
@@ -234,12 +236,12 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 <div id="scanCapture" hidden></div>
 <div id="scanReview" hidden>
 <p id="scanStatus" class="hint" role="status"></p>
-<label><span class="field-label">TEE-NAME (PFLICHT)</span><input id="scanName" maxlength="80" placeholder="z. B. Assam ..."></label>
-<label><span class="field-label">TEEART</span><select id="scanType"><option value="loose">Loser Tee</option><option value="bag">Teebeutel</option></select></label>
-<label><span class="field-label">DOSIERUNG – MENGE</span><input id="scanDose" type="number" min="0.1" max="1000" step="any" inputmode="decimal" placeholder="Bitte prüfen / eintragen"></label>
-<label><span class="field-label">EINHEIT (WIE AUF DER PACKUNG)</span><select id="scanUnit"><option value="">Bitte auswählen</option><option value="measure">TeaGschwendner-Teemaß</option><option value="tsp">Teelöffel</option><option value="g">Gramm</option><option value="bag">Teebeutel</option></select></label>
-<label><span class="field-label">FÜR WASSERMENGE (ML)</span><input id="scanBase" type="number" min="50" max="5000" step="any" inputmode="numeric" placeholder="z. B. 250"></label>
-<label><span class="field-label">ZIEHZEIT (MINUTEN)</span><input id="scanMin" type="number" min="1" max="60" step="1" inputmode="numeric" placeholder="Bitte prüfen / eintragen"></label>
+<label><span class="field-label">Tee-Name (Pflicht)</span><input id="scanName" maxlength="80" placeholder="z. B. Assam ..."></label>
+<label><span class="field-label">Teeart</span><select id="scanType"><option value="loose">Loser Tee</option><option value="bag">Teebeutel</option></select></label>
+<label><span class="field-label">Dosierung – Menge</span><input id="scanDose" type="number" min="0.1" max="1000" step="any" inputmode="decimal" placeholder="Bitte prüfen / eintragen"></label>
+<label><span class="field-label">Einheit (wie auf der Packung)</span><select id="scanUnit"><option value="">Bitte auswählen</option><option value="measure">TeaGschwendner-Teemaß</option><option value="tsp">Teelöffel</option><option value="g">Gramm</option><option value="bag">Teebeutel</option></select></label>
+<label><span class="field-label">Für Wassermenge (ml)</span><input id="scanBase" type="number" min="50" max="5000" step="any" inputmode="numeric" placeholder="z. B. 250"></label>
+<label><span class="field-label">Ziehzeit (Minuten)</span><input id="scanMin" type="number" min="1" max="60" step="1" inputmode="numeric" placeholder="Bitte prüfen / eintragen"></label>
 <p class="hint">Erkannte Werte sind Vorschläge. Bitte mit der Packung vergleichen. Unterschiedliche Löffelarten werden nicht gleichgesetzt.</p>
 <p id="scanRaw" hidden></p>
 <div class="scan-actions"><button id="scanBack" type="button">ZURÜCK</button><button id="scanSave" class="confirm" type="button">SPEICHERN</button></div>
@@ -248,14 +250,14 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 </div>
 <div class="tea-picker"><button id="teaTrigger" class="tea-trigger" type="button" aria-expanded="false" aria-controls="teaMenu"><span id="teaChosen">Tee wählen</span><span class="material-symbols-outlined tea-chevron" aria-hidden="true">keyboard_arrow_down</span></button><div id="teaMenu" class="tea-menu" hidden></div><select id="teaSelect" aria-label="Tee wählen" hidden></select></div>
 <div id="freeFields" class="free-fields" hidden>
-<label><span class="field-label">TEE-NAME</span><input id="freeName" maxlength="80" value="Eigener Tee"></label>
-<label><span class="field-label">TEEART</span><select id="freeType"><option value="loose">Loser Tee</option><option value="bag">Teebeutel</option></select></label>
-<label><span id="freeDoseLabel" class="field-label">TEEMAẞ PRO LITER</span><input id="freeDose" type="number" min="0.1" max="100" step="0.1" value="6" inputmode="decimal"></label>
-<button id="saveTea" type="button" class="scan">TEE SPEICHERN</button>
+<label><span class="field-label">Tee-Name</span><input id="freeName" maxlength="80" value="Eigener Tee"></label>
+<label><span class="field-label">Teeart</span><select id="freeType"><option value="loose">Loser Tee</option><option value="bag">Teebeutel</option></select></label>
+<label><span id="freeDoseLabel" class="field-label">Teemaß pro Liter</span><input id="freeDose" type="number" min="0.1" max="100" step="0.1" value="6" inputmode="decimal"></label>
+<button id="saveTea" type="button" class="scan primary">TEE SPEICHERN</button>
 </div>
 <div id="teaDetails" hidden>
 <div class="volumes" id="volumes" role="group" aria-label="Wassermenge"></div>
-<label id="customWrap" hidden><span class="field-label" style="margin-top:12px">EIGENE WASSERMENGE IN ML</span><input id="customMl" type="number" min="50" max="5000" step="10" value="600" inputmode="numeric"></label>
+<label id="customWrap" hidden><span class="field-label" style="margin-top:12px">Eigene Wassermenge in ml</span><input id="customMl" type="number" min="50" max="5000" step="10" value="600" inputmode="numeric"></label>
 <div class="result">
 <div class="section-title" style="margin:0">DOSIERUNG</div>
 <strong id="doseResult"></strong>
@@ -431,7 +433,7 @@ $("brewMinutes").textContent=brewMin+" MIN";
 $("brewMinus").disabled=brewMin<=1;$("brewPlus").disabled=brewMin>=60;
 $("brewStart").textContent="TIMER STARTEN · "+brewMin+" MIN";
 $("brewStart").disabled=!valid;
-$("freeDoseLabel").textContent=$("freeType").value==="bag"?"TEEBEUTEL PRO LITER":"TEEMAẞ PRO LITER";
+$("freeDoseLabel").textContent=$("freeType").value==="bag"?"Teebeutel pro Liter":"Teemaß pro Liter";
 }
 function selectTea(){
 $("teaDetails").hidden=!selectedTea;
