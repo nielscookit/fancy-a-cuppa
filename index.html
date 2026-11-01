@@ -49,7 +49,7 @@ button:focus-visible{outline:2px solid #e34840;outline-offset:3px}
 .scan-actions .confirm{background:#e34840;color:#fff;border-color:#e34840}
 .scan-panel .hint{overflow-wrap:anywhere}
 .scan-preview{max-width:100%;max-height:200px;object-fit:contain;display:block;margin:10px auto}
-.scan-choices{display:flex;gap:8px;margin-top:10px}.scan-choices button{flex:1;padding:12px;border:1px solid #e4e0da;border-radius:11px;background:#fff}.tea-picker{margin-top:18px}.delete-tea{margin-top:9px;border:0;background:transparent;color:#a43a35;font-size:11px;padding:10px 0}.scan-panel{margin-top:12px}.scan-panel label{margin:10px 0}.scan-panel details{margin-top:12px}.scan-panel details summary{cursor:pointer}.scan-panel .hint{line-height:1.5}
+.scan-choices{display:flex;gap:8px;margin-top:10px}.scan-choices button{flex:1;padding:12px;border:1px solid #e4e0da;border-radius:11px;background:#fff}.tea-picker{margin-top:18px;position:relative}.tea-trigger{width:100%;text-align:left;border:1px solid #e0ddd8;border-radius:11px;background:#fff;min-height:50px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:12px}.tea-menu{position:absolute;z-index:10;top:calc(100% + 5px);left:0;right:0;max-height:320px;overflow:auto;background:white;border:1px solid #dedad5;border-radius:12px;box-shadow:0 10px 24px #0002}.tea-option{display:flex;align-items:center;border-bottom:1px solid #eee}.tea-option:last-child{border:0}.tea-option .tea-choice{flex:1;text-align:left;border:0;background:transparent;padding:15px 12px;min-width:0;overflow-wrap:anywhere}.tea-option .tea-remove{flex:0 0 48px;border:0;border-left:1px solid #eee;background:transparent;color:#b13d36;min-height:46px;font-size:20px}.tea-option .tea-remove:focus-visible{outline:2px solid #e34840}.test{margin-top:30px!important}.delete-tea{margin-top:9px;border:0;background:transparent;color:#a43a35;font-size:11px;padding:10px 0}.scan-panel{margin-top:12px}.scan-panel label{margin:10px 0}.scan-panel details{margin-top:12px}.scan-panel details summary{cursor:pointer}.scan-panel .hint{line-height:1.5}
 .section-title{font-size:12px;font-weight:600;letter-spacing:1px;margin:22px 0 11px}
 .scan{width:100%;border:1px solid #dedad5;border-radius:13px;background:white;padding:17px;font-weight:600;text-align:center}
 select,input{font:inherit;min-height:48px;width:100%;border:1px solid #e0ddd8;border-radius:11px;background:white;color:#222;padding:11px}
@@ -128,7 +128,7 @@ footer{text-align:center;color:#999;font-size:11px;line-height:1.7;margin-top:18
 </div>
 <p id="scanFeedback" class="hint" role="status"></p>
 </div>
-<div class="tea-picker"><select id="teaSelect" aria-label="Tee wählen"></select><button id="deleteTea" class="delete-tea" type="button" hidden>Ausgewählten Tee löschen</button></div>
+<div class="tea-picker"><button id="teaTrigger" class="tea-trigger" type="button" aria-expanded="false" aria-controls="teaMenu"><span id="teaChosen">Tee wählen</span><span aria-hidden="true">⌄</span></button><div id="teaMenu" class="tea-menu" hidden></div><select id="teaSelect" aria-label="Tee wählen" hidden></select><button id="deleteTea" hidden type="button"></button></div>
 <div id="freeFields" class="free-fields" hidden>
 <label><span class="field-label">TEE-NAME</span><input id="freeName" maxlength="80" value="Eigener Tee"></label>
 <label><span class="field-label">TEEART</span><select id="freeType"><option value="loose">Loser Tee</option><option value="bag">Teebeutel</option></select></label>
@@ -254,7 +254,30 @@ const sel=$("teaSelect");sel.replaceChildren();
 const placeholder=document.createElement("option");placeholder.value="";placeholder.textContent="Tee wählen";sel.append(placeholder);
 [...builtins,...saved].forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent=t.name;sel.append(o);});
 const free=document.createElement("option");free.value="free";free.textContent="+ Freie Dosierung";sel.append(free);sel.value=selectedTea;
+$("teaChosen").textContent=([ ...builtins,...saved].find(t=>t.id===selectedTea)||{name:selectedTea==="free"?"+ Freie Dosierung":"Tee wählen"}).name;
 }
+function renderTeaMenu(){
+const menu=$("teaMenu");menu.replaceChildren();
+[...builtins,...saved,{id:"free",name:"+ Freie Dosierung"}].forEach(t=>{
+const row=document.createElement("div");row.className="tea-option";
+const choose=document.createElement("button");choose.type="button";choose.className="tea-choice";choose.textContent=t.name;
+choose.addEventListener("click",()=>{selectedTea=t.id;$("teaSelect").value=t.id;renderTeas();selectTea();closeTeaMenu();});
+row.append(choose);
+if(saved.some(x=>x.id===t.id)){
+const del=document.createElement("button");del.type="button";del.className="tea-remove";del.textContent="×";del.setAttribute("aria-label",t.name+" löschen");
+del.addEventListener("click",()=>{
+if(!confirm("„"+t.name+"“ löschen?"))return;
+const next=saved.filter(x=>x.id!==t.id);
+try{localStorage.setItem("fancy-cuppa-teas-v1",JSON.stringify(next));}catch(e){alert("Löschen nicht möglich.");return;}
+saved=next;if(selectedTea===t.id)selectedTea="";
+renderTeas();selectTea();renderTeaMenu();
+});row.append(del);
+}menu.append(row);
+});
+}
+function closeTeaMenu(){$("teaMenu").hidden=true;$("teaTrigger").setAttribute("aria-expanded","false");}
+$("teaTrigger").addEventListener("click",()=>{const opening=$("teaMenu").hidden;if(opening)renderTeaMenu();$("teaMenu").hidden=!opening;$("teaTrigger").setAttribute("aria-expanded",String(opening));});
+document.addEventListener("click",e=>{if(!e.target.closest(".tea-picker"))closeTeaMenu();});
 function renderVolumes(){
 const box=$("volumes");box.replaceChildren();
 volumeOptions.forEach(([id,label,ml])=>{
@@ -393,6 +416,13 @@ $("scanType").value=unit==="bag"?"bag":"loose";
 }
 }
 }
+function updateScanUnits(){
+const bag=$("scanType").value==="bag";
+for(const opt of $("scanUnit").options){if(!opt.value)continue;opt.hidden=bag?opt.value!=="bag":opt.value==="bag";opt.disabled=opt.hidden;}
+if(bag){$("scanUnit").value="bag";}else if($("scanUnit").value==="bag"){$("scanUnit").value="";}
+}
+$("scanType").addEventListener("change",updateScanUnits);
+$("scanUnit").addEventListener("change",()=>{if($("scanUnit").value==="bag")$("scanType").value="bag";else if($("scanUnit").value)$("scanType").value="loose";updateScanUnits();});
 let scanning=false;
 async function performScan(){
 const file=scanFile;if(!file||scanning)return;
@@ -406,7 +436,7 @@ const worker=await ocr.createWorker("deu+eng");
 let raw="";
 try{const result=await worker.recognize(file);raw=result.data.text||"";}finally{await worker.terminate();}
 $("scanRaw").textContent=raw||"Kein Text erkannt.";
-parseOcr(raw);
+parseOcr(raw);updateScanUnits();
 const missing=[["scanName","Name"],["scanDose","Dosierung"],["scanUnit","Einheit"],["scanBase","Wassermenge"],["scanMin","Ziehzeit"]].filter(([id])=>!$(id).value).map(x=>x[1]);
 $("scanStatus").textContent=missing.length?"Bitte prüfen und ergänzen: "+missing.join(", ")+".":"Angaben erkannt. Bitte vor dem Speichern mit der Packung vergleichen.";
 scanStage(true);$("scanFeedback").textContent="";
@@ -439,7 +469,7 @@ $("scanPanel").hidden=true;$("brewMessage").textContent="Tee gespeichert und aus
 $("teaSelect").scrollIntoView({behavior:"smooth",block:"center"});
 });
 
-renderTeas();renderVolumes();selectTea();
+renderTeas();renderVolumes();selectTea();updateScanUnits();
 draw();
 })();
 </script>
