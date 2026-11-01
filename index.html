@@ -40,6 +40,15 @@ button:focus-visible{outline:2px solid #e34840;outline-offset:3px}
 .secondary{background:#eeeae6;color:#222;border:0;border-radius:13px;padding:14px 17px;font-weight:500}
 .secondary[hidden]{display:none}
 .message{min-height:20px;margin:14px 0 0;text-align:center;font-size:12px;color:#777}
+.scan-panel{border:1px solid #e4e0da;background:#fff;border-radius:14px;padding:16px;margin-top:12px}
+.scan-panel h2{font-size:13px;font-weight:600;margin:0 0 12px}
+.scan-panel label{display:block;margin:12px 0}
+.scan-panel input,.scan-panel select{width:100%}
+.scan-actions{display:flex;gap:8px;margin-top:14px}
+.scan-actions button{flex:1;border:1px solid #e4e0da;background:#f7f6f4;border-radius:11px;padding:13px}
+.scan-actions .confirm{background:#e34840;color:#fff;border-color:#e34840}
+.scan-panel .hint{overflow-wrap:anywhere}
+.scan-preview{max-width:100%;max-height:200px;object-fit:contain;display:block;margin:10px auto}
 .section-title{font-size:12px;font-weight:600;letter-spacing:1px;margin:22px 0 11px}
 .scan{width:100%;border:1px solid #dedad5;border-radius:13px;background:white;padding:17px;font-weight:600;text-align:center}
 select,input{font:inherit;min-height:48px;width:100%;border:1px solid #e0ddd8;border-radius:11px;background:white;color:#222;padding:11px}
@@ -99,6 +108,28 @@ footer{text-align:center;color:#999;font-size:11px;line-height:1.7;margin-top:18
 <div class="divider"></div>
 <section aria-label="Teezubereitung">
 <button id="scan" type="button" class="scan">⌁ TEE ERKENNEN</button>
+<div id="scanPanel" class="scan-panel" hidden>
+<h2 id="scanHeading">1 / FOTOGRAFIEREN</h2>
+<div id="scanCapture">
+<p class="hint">Fotografiere die Zubereitungshinweise auf der Packung. Die Texterkennung benötigt beim ersten Start Internetzugang.</p>
+<input id="scanFile" type="file" accept="image/*" capture="environment" aria-label="Teepackung fotografieren oder Bild auswählen">
+<img id="scanPreview" class="scan-preview" alt="Ausgewähltes Verpackungsfoto" hidden>
+<button id="scanRead" type="button" class="scan" disabled>TEXT ERKENNEN</button>
+</div>
+<div id="scanReview" hidden>
+<p id="scanStatus" class="hint" role="status"></p>
+<label><span class="field-label">TEE-NAME (PFLICHT)</span><input id="scanName" maxlength="80" placeholder="z. B. Assam ..."></label>
+<label><span class="field-label">TEEART</span><select id="scanType"><option value="loose">Loser Tee</option><option value="bag">Teebeutel</option></select></label>
+<label><span class="field-label">DOSIERUNG – MENGE</span><input id="scanDose" type="number" min="0.1" max="1000" step="any" inputmode="decimal" placeholder="Bitte prüfen / eintragen"></label>
+<label><span class="field-label">EINHEIT (WIE AUF DER PACKUNG)</span><select id="scanUnit"><option value="">Bitte auswählen</option><option value="measure">TeaGschwendner-Teemaß</option><option value="tsp">Teelöffel</option><option value="g">Gramm</option><option value="bag">Teebeutel</option></select></label>
+<label><span class="field-label">FÜR WASSERMENGE (ML)</span><input id="scanBase" type="number" min="50" max="5000" step="any" inputmode="numeric" placeholder="z. B. 250"></label>
+<label><span class="field-label">ZIEHZEIT (MINUTEN)</span><input id="scanMin" type="number" min="1" max="60" step="1" inputmode="numeric" placeholder="Bitte prüfen / eintragen"></label>
+<p class="hint">Erkannte Werte sind Vorschläge. Bitte mit der Packung vergleichen. Unterschiedliche Löffelarten werden nicht gleichgesetzt.</p>
+<details><summary>Erkannten Text ansehen</summary><p id="scanRaw" class="hint"></p></details>
+<div class="scan-actions"><button id="scanBack" type="button">ZURÜCK</button><button id="scanSave" class="confirm" type="button">3 / SPEICHERN</button></div>
+</div>
+<p id="scanFeedback" class="hint" role="status"></p>
+</div>
 <div class="section-title">TEE AUSWÄHLEN</div>
 <select id="teaSelect" aria-label="Tee auswählen"></select>
 <div id="freeFields" class="free-fields" hidden>
@@ -239,8 +270,8 @@ $("customWrap").hidden=volumeId!=="custom";
 function renderDose(){
 const tea=activeTea(),ml=selectedMl();
 const valid=Number.isFinite(ml)&&ml>=50&&ml<=5000;
-$("doseResult").textContent=!valid?"Wassermenge prüfen":tea.type==="bag"?format(Math.ceil(ml*tea.dose/1000))+" Teebeutel":format(Math.round(ml*tea.dose/100)/10)+" Teemaß";
-$("doseHint").textContent=tea.type==="bag"?"Basis: "+format(tea.dose)+" Beutel pro Liter (aufgerundet).":"Basis: "+format(tea.dose)+" gestrichene TeaGschwendner-Teemaß pro Liter.";
+$("doseResult").textContent=!valid?"Wassermenge prüfen":tea.type==="bag"?format(Math.ceil(ml*tea.dose/1000))+" Teebeutel":format(Math.round(ml*tea.dose/100)/10)+(tea.unit==="g"?" g":tea.unit==="tsp"?" TL":" Teemaß");
+$("doseHint").textContent=tea.type==="bag"?"Basis: "+format(tea.dose)+" Beutel pro Liter (aufgerundet).":"Basis: "+format(tea.dose)+(tea.unit==="g"?" g":tea.unit==="tsp"?" Teelöffel":" gestrichene TeaGschwendner-Teemaß")+" pro Liter.";
 if(tea.provisional)$("doseHint").textContent+=" Richtwert – bitte Packungsangabe prüfen.";
 $("brewMinutes").textContent=brewMin+" MIN";
 $("brewMinus").disabled=brewMin<=1;$("brewPlus").disabled=brewMin>=60;
@@ -273,9 +304,89 @@ try{localStorage.setItem("fancy-cuppa-teas-v1",JSON.stringify(saved));}catch(e){
 selectedTea=id;renderTeas();selectTea();$("brewMessage").textContent="Tee auf diesem Gerät gespeichert.";
 });
 $("scan").addEventListener("click",()=>{
-$("brewMessage").textContent="Die Kameraerkennung folgt im nächsten Umsetzungsschritt.";
-$("brewMessage").scrollIntoView({behavior:"smooth",block:"nearest"});
+$("scanPanel").hidden=!$("scanPanel").hidden;
+if(!$("scanPanel").hidden)$("scanPanel").scrollIntoView({behavior:"smooth",block:"start"});
 });
+let scanObjectUrl=null;
+$("scanFile").addEventListener("change",()=>{
+const file=$("scanFile").files&&$("scanFile").files[0];
+if(scanObjectUrl)URL.revokeObjectURL(scanObjectUrl);
+scanObjectUrl=file?URL.createObjectURL(file):null;
+$("scanPreview").hidden=!file;
+if(file)$("scanPreview").src=scanObjectUrl;
+$("scanRead").disabled=!file;
+$("scanFeedback").textContent="";
+});
+function scanStage(review){
+$("scanCapture").hidden=review;$("scanReview").hidden=!review;
+$("scanHeading").textContent=review?"2 / PRÜFEN":"1 / FOTOGRAFIEREN";
+}
+function loadOcr(){
+return new Promise((resolve,reject)=>{
+if(window.Tesseract){resolve(window.Tesseract);return;}
+const script=document.createElement("script");
+script.src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+script.onload=()=>window.Tesseract?resolve(window.Tesseract):reject(Error("OCR fehlt"));
+script.onerror=()=>reject(Error("OCR konnte nicht geladen werden"));
+document.head.append(script);
+});
+}
+function parseOcr(raw){
+const text=raw.replace(/\s+/g," ");
+const time=text.match(/(?:ziehzeit|ziehen lassen|brewing time|steep(?:ing)? time)\s*[:\-]?\s*(\d{1,2})(?:\s*[-–]\s*(\d{1,2}))?\s*(?:min(?:uten|utes)?)?/i)
+||text.match(/(\d{1,2})(?:\s*[-–]\s*(\d{1,2}))?\s*(?:minuten|minutes|mins?)(?![a-z])/i);
+if(time){const n=Number(time[1]);if(n>=1&&n<=60)$("scanMin").value=String(n);}
+const patterns=[
+{re:/(\d+(?:[.,]\d+)?)\s*(?:teebeutel|tea\s*bags?|beutel)\s*(?:pro|per|für|for|\/)\s*(\d+(?:[.,]\d+)?)\s*(ml|l|liter)/i,unit:"bag"},
+{re:/(\d+(?:[.,]\d+)?)\s*(?:teelöffel|tsp|teaspoons?)\s*(?:pro|per|für|for|\/)\s*(\d+(?:[.,]\d+)?)\s*(ml|l|liter)/i,unit:"tsp"},
+{re:/(\d+(?:[.,]\d+)?)\s*(?:teemaß|teemass|tea\s*measure)\s*(?:pro|per|für|for|\/)\s*(\d+(?:[.,]\d+)?)\s*(ml|l|liter)/i,unit:"measure"},
+{re:/(\d+(?:[.,]\d+)?)\s*g(?:ramm)?\s*(?:pro|per|für|for|\/)\s*(\d+(?:[.,]\d+)?)\s*(ml|l|liter)/i,unit:"g"}
+];
+for(const p of patterns){const m=text.match(p.re);if(m){
+$("scanDose").value=m[1].replace(",",".");$("scanUnit").value=p.unit;
+$("scanBase").value=String(Number(m[2].replace(",","."))*(m[3].toLowerCase()==="ml"?1:1000));break;
+}}
+}
+$("scanRead").addEventListener("click",async()=>{
+const file=$("scanFile").files&&$("scanFile").files[0];if(!file)return;
+$("scanRead").disabled=true;$("scanFeedback").textContent="Texterkennung läuft …";
+["scanName","scanDose","scanBase","scanMin"].forEach(id=>$(id).value="");
+$("scanUnit").value="";
+try{
+const ocr=await loadOcr();
+const worker=await ocr.createWorker("deu+eng");
+let raw="";
+try{const result=await worker.recognize(file);raw=result.data.text||"";}finally{await worker.terminate();}
+$("scanRaw").textContent=raw||"Kein Text erkannt.";
+parseOcr(raw);
+$("scanStatus").textContent=raw.trim()?"Texterkennung abgeschlossen. Bitte alle Angaben prüfen.":"Kein lesbarer Text erkannt. Bitte Angaben manuell eintragen.";
+scanStage(true);$("scanFeedback").textContent="";
+}catch(e){
+$("scanRaw").textContent="Texterkennung nicht verfügbar.";
+$("scanStatus").textContent="Texterkennung fehlgeschlagen. Du kannst die Angaben trotzdem manuell eingeben.";
+scanStage(true);$("scanFeedback").textContent="";
+}
+$("scanRead").disabled=false;
+});
+$("scanBack").addEventListener("click",()=>scanStage(false));
+$("scanSave").addEventListener("click",()=>{
+const name=$("scanName").value.trim(),qty=Number($("scanDose").value),base=Number($("scanBase").value),mins=Number($("scanMin").value),unit=$("scanUnit").value,type=$("scanType").value;
+if(!name||!unit||!Number.isFinite(qty)||qty<=0||!Number.isFinite(base)||base<50||base>5000||!Number.isInteger(mins)||mins<1||mins>60){
+$("scanFeedback").textContent="Bitte Name, Dosierung, Einheit, Wassermenge und Ziehzeit vollständig prüfen.";return;
+}
+if((type==="bag")!==(unit==="bag")){
+$("scanFeedback").textContent="Teeart und Dosierungseinheit müssen zusammenpassen.";return;
+}
+const dose=qty*1000/base;
+if(dose<=0||dose>1000){$("scanFeedback").textContent="Dosierung liegt außerhalb des zulässigen Bereichs.";return;}
+const tea={id:"scan-"+Date.now(),name,type,dose,min:mins,unit,provisional:false};
+const next=[...saved,tea];
+try{localStorage.setItem("fancy-cuppa-teas-v1",JSON.stringify(next));}catch(e){$("scanFeedback").textContent="Lokales Speichern ist nicht möglich.";return;}
+saved=next;selectedTea=tea.id;brewMin=mins;renderTeas();selectTea();
+$("scanPanel").hidden=true;$("brewMessage").textContent="Tee gespeichert und ausgewählt.";
+$("teaSelect").scrollIntoView({behavior:"smooth",block:"center"});
+});
+
 renderTeas();renderVolumes();selectTea();
 draw();
 })();
