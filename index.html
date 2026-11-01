@@ -452,7 +452,7 @@ $("customWrap").hidden=volumeId!=="custom";
 function renderDose(){
 const tea=activeTea(),ml=selectedMl();
 if(!tea)return;
-const valid=Number.isFinite(ml)&&ml>=50&&ml<=5000&&Number.isFinite(tea.dose)&&tea.dose>0&&tea.dose<=1000&&!!tea.unit;
+const valid=Number.isFinite(ml)&&ml>=50&&ml<=5000&&Number.isFinite(tea.dose)&&tea.dose>0&&tea.dose<=1000&&(!!tea.unit||selectedTea!=="free");
 $("doseResult").textContent=!valid?"Wassermenge prüfen":tea.type==="bag"?format(Math.ceil(ml*tea.dose/1000))+" Teebeutel":format(Math.round(ml*tea.dose/100)/10)+(tea.unit==="g"?" g":tea.unit==="tsp"?" TL":" Teemaß");
 $("doseHint").textContent=!Number.isFinite(tea.dose)?"Bitte Dosierung und Bezugswassermenge eingeben.":tea.type==="bag"?"Basis: "+format(tea.dose)+" Beutel pro Liter (aufgerundet).":"Basis: "+format(tea.dose)+(tea.unit==="g"?" g":tea.unit==="tsp"?" Teelöffel":" gestrichene TeaGschwendner-Teemaß")+" pro Liter.";
 if(tea.provisional)$("doseHint").textContent+=" Richtwert – bitte Packungsangabe prüfen.";
