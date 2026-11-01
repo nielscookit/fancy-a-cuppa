@@ -200,12 +200,15 @@ voice.pause();voice.currentTime=0;voice.muted=false;voice.volume=1;
 return voice.play();
 }
 function unlockVoice(){
-voice.pause();voice.currentTime=0;voice.muted=true;
+voice.muted=false;
+voice.volume=1;
+voice.load();
 const p=voice.play();
 if(p&&typeof p.then==="function"){
-p.then(()=>{voice.pause();voice.currentTime=0;voice.muted=false;}).catch(()=>{voice.muted=false;});
-}else{voice.muted=false;}
+p.then(()=>{voice.pause();voice.currentTime=0;}).catch(()=>{});
 }
+}
+voice.addEventListener("error",()=>{$("message").textContent="Audiodatei konnte nicht geladen werden.";});
 function tick(){
 if(!running)return;
 remaining=Math.max(0,(deadline-Date.now())/1000);
