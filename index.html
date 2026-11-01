@@ -49,7 +49,7 @@ button:focus-visible{outline:2px solid #e34840;outline-offset:3px}
 .scan-actions .confirm{background:#e34840;color:#fff;border-color:#e34840}
 .scan-panel .hint{overflow-wrap:anywhere}
 .scan-preview{max-width:100%;max-height:200px;object-fit:contain;display:block;margin:10px auto}
-.scan-choices{display:flex;gap:8px;margin-top:10px}.scan-choices button{flex:1;padding:12px;border:1px solid #e4e0da;border-radius:11px;background:#fff}.tea-picker{margin-top:18px;position:relative}.tea-trigger{width:100%;text-align:left;border:1px solid #e0ddd8;border-radius:11px;background:#fff;min-height:50px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:12px}.tea-menu{position:absolute;z-index:10;top:calc(100% + 5px);left:0;right:0;max-height:320px;overflow:auto;background:white;border:1px solid #dedad5;border-radius:12px;box-shadow:0 10px 24px #0002}.tea-option{display:flex;align-items:center;border-bottom:1px solid #eee}.tea-option:last-child{border:0}.tea-option .tea-choice{flex:1;text-align:left;border:0;background:transparent;padding:15px 12px;min-width:0;overflow-wrap:anywhere}.tea-option .tea-remove{flex:0 0 48px;border:0;border-left:1px solid #eee;background:transparent;color:#b13d36;min-height:46px;font-size:20px}.tea-option .tea-remove:focus-visible{outline:2px solid #e34840}.test{margin-top:30px!important}.delete-tea{margin-top:9px;border:0;background:transparent;color:#a43a35;font-size:11px;padding:10px 0}.scan-panel{margin-top:12px}.scan-panel label{margin:10px 0}.scan-panel details{margin-top:12px}.scan-panel details summary{cursor:pointer}.scan-panel .hint{line-height:1.5}
+.scan-choices{display:flex;gap:8px;margin-top:10px}.scan-choices .scan-action{flex:1;padding:12px;border:1px solid #e4e0da;border-radius:11px;background:#fff;text-align:center;cursor:pointer;box-sizing:border-box}.scan-input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}.tea-picker{margin-top:18px;position:relative}.tea-trigger{width:100%;text-align:left;border:1px solid #e0ddd8;border-radius:11px;background:#fff;min-height:50px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:12px}.tea-menu{position:absolute;z-index:10;top:calc(100% + 5px);left:0;right:0;max-height:320px;overflow:auto;background:white;border:1px solid #dedad5;border-radius:12px;box-shadow:0 10px 24px #0002}.tea-option{display:flex;align-items:center;border-bottom:1px solid #eee}.tea-option:last-child{border:0}.tea-option .tea-choice{flex:1;text-align:left;border:0;background:transparent;padding:15px 12px;min-width:0;overflow-wrap:anywhere}.tea-option .tea-remove{flex:0 0 48px;border:0;border-left:1px solid #eee;background:transparent;color:#b13d36;min-height:46px;font-size:20px}.tea-option .tea-remove:focus-visible{outline:2px solid #e34840}.test{margin-top:30px!important}.delete-tea{margin-top:9px;border:0;background:transparent;color:#a43a35;font-size:11px;padding:10px 0}.scan-panel{margin-top:12px}.scan-panel label{margin:10px 0}.scan-panel details{margin-top:12px}.scan-panel details summary{cursor:pointer}.scan-panel .hint{line-height:1.5}
 .section-title{font-size:12px;font-weight:600;letter-spacing:1px;margin:22px 0 11px}
 .scan{width:100%;border:1px solid #dedad5;border-radius:13px;background:white;padding:17px;font-weight:600;text-align:center}
 select,input{font:inherit;min-height:48px;width:100%;border:1px solid #e0ddd8;border-radius:11px;background:white;color:#222;padding:11px}
@@ -108,9 +108,9 @@ footer{text-align:center;color:#999;font-size:11px;line-height:1.7;margin-top:18
 </section>
 <div class="divider"></div>
 <section aria-label="Teezubereitung">
-<div class="scan-choices"><button id="scan" type="button" aria-label="Kamera öffnen">▣ SCANNEN</button><button id="gallery" type="button">FOTOS</button></div>
-<input id="scanFile" type="file" accept="image/*" capture="environment" hidden>
-<input id="galleryFile" type="file" accept="image/*" hidden>
+<div class="scan-choices"><label class="scan-action" for="scanFile" aria-label="Kamera öffnen">▣ SCANNEN</label><label class="scan-action" for="galleryFile">FOTOS</label></div>
+<input class="scan-input" id="scanFile" type="file" accept="image/*" capture="environment">
+<input class="scan-input" id="galleryFile" type="file" accept="image/*">
 <div id="scanPanel" class="scan-panel" hidden>
 <h2 id="scanHeading">TEXT WIRD ERKANNT …</h2>
 <div id="scanCapture" hidden></div>
@@ -332,8 +332,8 @@ selectedTea=id;renderTeas();selectTea();$("brewMessage").textContent="Tee auf di
 });
 let scanObjectUrl=null;
 let scanFile=null;
-$("scan").addEventListener("click",()=>{$("scanFile").value="";$("scanFile").click();});
-$("gallery").addEventListener("click",()=>{$("galleryFile").value="";$("galleryFile").click();});
+
+
 function acceptScan(file){
 if(!file)return;
 scanFile=file;
