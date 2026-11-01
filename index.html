@@ -372,9 +372,9 @@ if(!running)return;
 remaining=Math.max(0,(deadline-Date.now())/1000);
 if(remaining<=0){
 stop();remaining=0;finished=true;
-$("message").textContent="Dein Tee ist fertig.";
+$("message").textContent="";
 draw();
-playVoice().catch(()=>{$("message").textContent="Dein Tee ist fertig. Sprachausgabe wurde blockiert.";});
+playVoice().catch(()=>{});
 return;
 }
 draw();
