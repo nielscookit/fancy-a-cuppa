@@ -200,13 +200,9 @@ voice.pause();voice.currentTime=0;voice.muted=false;voice.volume=1;
 return voice.play();
 }
 function unlockVoice(){
-voice.muted=false;
-voice.volume=1;
-voice.load();
-const p=voice.play();
-if(p&&typeof p.then==="function"){
-p.then(()=>{voice.pause();voice.currentTime=0;}).catch(()=>{});
-}
+// Prepare the file without starting audible playback.
+voice.preload="auto";
+if(voice.readyState===0)voice.load();
 }
 voice.addEventListener("error",()=>{$("message").textContent="Audiodatei konnte nicht geladen werden.";});
 function tick(){
