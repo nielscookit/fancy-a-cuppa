@@ -316,13 +316,6 @@ $("brewMinus").addEventListener("click",()=>{brewMin=Math.max(1,brewMin-1);rende
 $("brewPlus").addEventListener("click",()=>{brewMin=Math.min(60,brewMin+1);renderDose();});
 $("freeType").addEventListener("change",renderDose);
 $("freeDose").addEventListener("input",renderDose);
-$("deleteTea").addEventListener("click",()=>{
-const tea=saved.find(t=>t.id===selectedTea);if(!tea)return;
-if(!confirm("„"+tea.name+"“ wirklich löschen?"))return;
-const next=saved.filter(t=>t.id!==selectedTea);
-try{localStorage.setItem("fancy-cuppa-teas-v1",JSON.stringify(next));}catch(e){$("brewMessage").textContent="Löschen nicht möglich.";return;}
-saved=next;selectedTea="";renderTeas();selectTea();
-});
 $("brewStart").addEventListener("click",()=>{
 if($("brewStart").disabled)return;
 setTime(brewMin);
