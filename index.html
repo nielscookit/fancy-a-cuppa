@@ -73,33 +73,6 @@ select{appearance:auto}
 .test{width:100%;padding:13px;border:1px solid #e5e1dc;border-radius:12px;background:#fff;color:#555;font-size:12px}
 footer{text-align:center;color:#999;font-size:11px;line-height:1.7;margin-top:18px}
 @media(prefers-reduced-motion:reduce){.progress{transition:none}}
-
-/* Soft, tactile button treatment inspired by the supplied reference; layout unchanged. */
-:root{background:#f7f9fc;color:#1c2530}
-body{background:linear-gradient(180deg,#f5faff 0%,#f8f9fb 45%,#f7f9fc 100%)}
-.track{stroke:#e5edf5}
-.progress{stroke:#377fe7}
-button,.scan-action,.tea-trigger{transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .12s ease}
-button:active,.scan-action:active,.tea-trigger:active{transform:scale(.985)}
-button:focus-visible,.scan-action:focus-visible,.tea-trigger:focus-visible{outline:2px solid #377fe7;outline-offset:3px}
-.round{background:#fff;border:1px solid #e7edf4;color:#2879dd;box-shadow:0 3px 12px #1c4e8510}
-.preset{border-color:#e4ebf3;border-radius:18px;background:#fff;box-shadow:0 3px 10px #274d7610}
-.preset.active{background:#252e3a;color:#fff;border-color:#252e3a;box-shadow:0 4px 14px #252e3a24}
-.primary{background:#327be4;border-radius:22px;box-shadow:0 5px 16px #327be42c}
-.secondary{background:#eaf0f7;border-radius:20px}
-.scan-choices .scan-action{background:#fff;border-color:#e1e9f2;border-radius:21px;min-height:54px;display:flex;align-items:center;justify-content:center;color:#2879dd;box-shadow:0 3px 12px #274d7610}
-.tea-trigger{border-color:#e1e9f2;border-radius:21px;min-height:58px;box-shadow:0 3px 12px #274d760c}
-.tea-menu{border-color:#e1e9f2;border-radius:20px;box-shadow:0 16px 35px #25476a1c}
-.tea-option .tea-remove{color:#a84b55}
-.volume{border-color:#e2eaf2;border-radius:21px;min-height:66px;box-shadow:0 3px 10px #274d760a}
-.volume.active{background:#eaf4ff;border-color:#377fe7;box-shadow:0 0 0 1px #377fe72b}
-.volume.active span{color:#346bb1}
-.result,.scan-panel{border-color:#e2eaf2;border-radius:23px;box-shadow:0 4px 16px #274d760a}
-.scan,.scan-actions button{border-color:#e1e9f2;border-radius:20px}
-.scan-actions .confirm{background:#327be4;border-color:#327be4;box-shadow:0 4px 12px #327be424}
-select,input{border-color:#e1e9f2;border-radius:16px}
-.divider{background:#e2eaf2}
-@media(prefers-reduced-motion:reduce){button,.scan-action,.tea-trigger{transition:none}}
 </style>
 </head>
 <body>
