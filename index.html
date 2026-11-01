@@ -187,8 +187,16 @@ $("start").textContent=running?"Ⅱ PAUSIEREN":finished?"↺ NEU STARTEN":remain
 $("reset").hidden=!(running||remaining<total||finished);
 $("state").textContent=finished?"TEA IS READY":running?"BREWING":"BREW TIME";
 }
+let wakeLock=null;
+async function requestWakeLock(){
+if(!running||document.hidden||!("wakeLock" in navigator))return;
+try{wakeLock=await navigator.wakeLock.request("screen");}catch(e){wakeLock=null;}
+}
+function releaseWakeLock(){
+if(wakeLock){const lock=wakeLock;wakeLock=null;lock.release().catch(()=>{});}
+}
 function clearTicker(){if(ticker!==null){clearInterval(ticker);ticker=null;}}
-function stop(){clearTicker();running=false;}
+function stop(){clearTicker();running=false;releaseWakeLock();}
 function setTime(min){
 stop();chosen=Math.max(1,Math.min(60,min));total=remaining=chosen*60;finished=false;
 $("message").textContent="";
@@ -223,7 +231,7 @@ if(finished){remaining=total;finished=false;}
 unlockVoice();
 running=true;deadline=Date.now()+remaining*1000;
 $("message").textContent="";
-tick();ticker=setInterval(tick,200);
+tick();ticker=setInterval(tick,200);requestWakeLock();
 });
 $("reset").addEventListener("click",reset);
 $("minus").addEventListener("click",()=>setTime(chosen-1));
@@ -233,7 +241,7 @@ $("testSound").addEventListener("click",()=>{
 playVoice().then(()=>{$("message").textContent="Sprachdatei wird abgespielt.";})
 .catch(()=>{$("message").textContent="Sprachdatei konnte nicht abgespielt werden.";});
 });
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&running)tick();});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&running){tick();requestWakeLock();}});
 const builtins=[
 {id:"ctc",name:"Assam CTC Tinsukia · TeaGschwendner 109",type:"loose",dose:6,min:4,provisional:true},
 {id:"brahmaputra",name:"Assam Brahmaputra Malty · TeaGschwendner 125",type:"loose",dose:6,min:5,provisional:true},
