@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="de">
 <head>
@@ -8,259 +7,157 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Fancy a Cuppa">
 <title>Fancy a Cuppa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;color:#191919;background:#faf9f6}
+:root{font-family:"Roboto Mono",monospace;color:#1d1d1d;background:#faf9f6;font-size:13px}
 *{box-sizing:border-box}
 body{margin:0}
-main{max-width:480px;margin:auto;padding:30px 20px 50px}
-header{text-align:center;margin-bottom:30px}
-h1{font-family:Georgia,serif;font-weight:normal;font-size:clamp(43px,11vw,58px);letter-spacing:-2px;margin:8px 0}
-p{color:#777;font-size:13px}
-.eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#777}
-.panel{background:white;border:1px solid #eceae7;border-radius:22px;padding:20px;margin:13px 0}
-.label{font-size:11px;font-weight:750;letter-spacing:1.5px;text-transform:uppercase;color:#777;margin-bottom:13px}
-button{font:inherit;cursor:pointer;touch-action:manipulation}
-.tabs{display:flex;background:#f2f1ef;border-radius:12px;padding:4px;gap:4px}
-.tabs button{flex:1;border:0;background:transparent;border-radius:9px;padding:12px;font-weight:600}
-.tabs .active{background:#191919;color:white}
-.teas{display:grid;gap:8px;margin-top:16px}
-.tea{width:100%;padding:13px;border:1px solid #e8e7e4;border-radius:12px;background:white;text-align:left}
-.tea strong{display:block;font-size:14px}
-.tea small{display:block;color:#888;margin-top:4px}
-.tea.active{border-color:#ed433b;background:#fff7f6}
-.stepper{display:flex;align-items:center;justify-content:center;gap:20px;margin:16px 0}
-.stepper button{height:46px;width:46px;border-radius:50%;background:#f5f4f2;border:1px solid #e5e4e1;font-size:24px}
-.amount{font-size:27px;font-weight:650;min-width:125px;text-align:center}
-.note{text-align:center;font-size:12px;color:#888}
-.dose{text-align:center;font-family:Georgia,serif;font-size:27px;margin:18px 0 5px}
-.choices{display:flex;gap:8px;margin-top:14px}
-.choices button{flex:1;padding:12px;border:1px solid #ddd;background:white;border-radius:12px;font-weight:650}
-.choices .active{background:#191919;color:white}
-.hidden{display:none}
-.timer{text-align:center;padding:22px 0}
-.dial{width:min(285px,85vw);aspect-ratio:1;margin:10px auto;position:relative}
+main{max-width:480px;margin:auto;padding:28px 20px max(45px,env(safe-area-inset-bottom))}
+header{text-align:center;margin:0 0 24px}
+h1{font-size:22px;font-weight:500;letter-spacing:-1px;margin:0}
+.timer{text-align:center}
+.dial{width:min(285px,82vw);aspect-ratio:1;margin:8px auto 15px;position:relative}
 .dial svg{width:100%;height:100%;transform:rotate(-90deg)}
-.dial circle{fill:none;stroke-width:7}
-.track{stroke:#eee}
-.progress{stroke:#ed433b;stroke-linecap:round;transition:stroke-dashoffset .2s linear}
-.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.clock{font-size:55px;font-weight:600;letter-spacing:-3px;font-variant-numeric:tabular-nums}
-.state{font-size:12px;color:#888;margin-top:8px}
-.controls{display:flex;gap:9px}
-.controls button{border:0;border-radius:13px;padding:15px;font-weight:700}
-.primary{flex:1;background:#ed433b;color:white}
-.secondary{background:#f0efec;color:#222}
-.test{width:100%;margin-top:12px;padding:13px;border:1px solid #ddd;border-radius:12px;background:white;font-weight:600}
-footer{text-align:center;color:#999;font-size:11px;margin-top:25px;line-height:1.6}
+.dial circle{fill:none;stroke-width:6}
+.track{stroke:#e9e7e3}
+.progress{stroke:#e34840;stroke-linecap:round;transition:stroke-dashoffset .18s linear}
+.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.clock{font-family:Roboto,Arial,sans-serif;font-size:clamp(54px,14vw,68px);font-weight:700;line-height:1;letter-spacing:-2px;font-variant-numeric:tabular-nums}
+.state{font-size:14px;font-weight:500;letter-spacing:1.7px;color:#777}
+button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:focus-visible{outline:2px solid #e34840;outline-offset:3px}
+.stepper{display:flex;align-items:center;justify-content:center;gap:22px;margin:12px 0 20px}
+.round{height:44px;width:44px;border:1px solid #dfdcd7;background:#fff;border-radius:50%;font-size:23px;line-height:1}
+.round:disabled{opacity:.35}
+.minute-label{min-width:80px;text-align:center;font-weight:500}
+.presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:13px}
+.preset{padding:13px 2px;background:#fff;border:1px solid #e5e1dc;border-radius:12px;font-size:12px;font-weight:500}
+.preset.active{background:#222;color:#fff;border-color:#222}
+.actions{display:flex;gap:9px}
+.primary{flex:1;background:#e34840;color:white;border:0;border-radius:13px;padding:16px 12px;font-weight:600;min-height:52px}
+.secondary{background:#eeeae6;color:#222;border:0;border-radius:13px;padding:14px 17px;font-weight:500}
+.secondary[hidden]{display:none}
+.message{min-height:20px;margin:14px 0 0;text-align:center;font-size:12px;color:#777}
+.divider{height:1px;background:#e8e5e0;margin:27px 0 20px}
+.test{width:100%;padding:13px;border:1px solid #e5e1dc;border-radius:12px;background:#fff;color:#555;font-size:12px}
+footer{text-align:center;color:#999;font-size:11px;line-height:1.7;margin-top:18px}
+@media(prefers-reduced-motion:reduce){.progress{transition:none}}
 </style>
 </head>
 <body>
 <main>
-<header>
-<div class="eyebrow">Your daily tea ritual</div>
-<h1>Fancy a <i>Cuppa?</i></h1>
-<p>Dein persönlicher Tee-Timer.</p>
-</header>
-
-<section class="panel">
-<div class="label">01 / Zubereitung</div>
-<div class="tabs">
-<button id="looseTab" class="active">Loser Tee</button>
-<button id="bagTab">Beuteltee</button>
-</div>
-<div class="label" style="margin-top:23px">02 / Tee auswählen</div>
-<div id="teas" class="teas"></div>
-</section>
-
-<section class="panel">
-<div id="amountTitle" class="label">03 / Wassermenge</div>
-<div class="stepper">
-<button id="minus" aria-label="Weniger">−</button>
-<div id="amount" class="amount">600 ml</div>
-<button id="plus" aria-label="Mehr">+</button>
-</div>
-<div id="amountNote" class="note"></div>
-<hr style="border:0;border-top:1px solid #eee;margin:20px 0">
-<div class="label">Dosierung</div>
-<div id="dose" class="dose"></div>
-<div id="doseNote" class="note"></div>
-<div id="timeChooser" class="hidden">
-<div class="label" style="margin-top:22px">Ziehzeit</div>
-<div class="choices">
-<button data-min="2">2 Minuten</button>
-<button data-min="3">3 Minuten</button>
-</div>
-</div>
-</section>
-
-<section class="timer">
-<div class="eyebrow">Brewing time</div>
+<header><h1>Fancy a Cuppa</h1></header>
+<section class="timer" aria-label="Tee-Timer">
 <div class="dial">
 <svg viewBox="0 0 240 240" aria-hidden="true">
-<circle class="track" cx="120" cy="120" r="105"/>
-<circle id="progress" class="progress" cx="120" cy="120" r="105"/>
+<circle class="track" cx="120" cy="120" r="105"></circle>
+<circle id="progress" class="progress" cx="120" cy="120" r="105"></circle>
 </svg>
 <div class="center">
-<div id="clock" class="clock">04:00</div>
-<div id="state" class="state" role="status">Bereit zum Aufgießen</div>
+<div id="clock" class="clock" role="timer" aria-label="Verbleibende Zeit">04:00</div>
+<div id="state" class="state">BREW TIME</div>
 </div>
 </div>
-<div class="controls">
-<button id="start" class="primary">▶ Starten</button>
-<button id="reset" class="secondary">↺ Reset</button>
+<div class="stepper">
+<button id="minus" class="round" type="button" aria-label="Eine Minute weniger">−</button>
+<div id="minuteLabel" class="minute-label">4 MIN</div>
+<button id="plus" class="round" type="button" aria-label="Eine Minute mehr">+</button>
 </div>
-<button id="testSound" class="test">▶ Stimme testen</button>
+<div class="presets" role="group" aria-label="Ziehzeit wählen">
+<button type="button" class="preset" data-min="2">2 MIN</button>
+<button type="button" class="preset" data-min="3">3 MIN</button>
+<button type="button" class="preset" data-min="4">4 MIN</button>
+<button type="button" class="preset" data-min="5">5 MIN</button>
+</div>
+<div class="actions">
+<button id="start" type="button" class="primary">▶ TIMER STARTEN</button>
+<button id="reset" type="button" class="secondary" hidden>↺ RESET</button>
+</div>
+<p id="message" class="message" role="status" aria-live="polite"></p>
 </section>
-<footer>Nach Ablauf den Tee entfernen.<br>Für die Sprachausgabe App geöffnet lassen.</footer>
+<div class="divider"></div>
+<button id="testSound" type="button" class="test">▶ STIMME TESTEN</button>
+<footer>Die Sprachausgabe kann durch iOS eingeschränkt sein.<br>Für eine zuverlässigere Wiedergabe die App geöffnet lassen.</footer>
 </main>
-
 <script>
 (()=>{
 "use strict";
 const $=id=>document.getElementById(id);
-const teas={
-loose:[
-{name:"Assam CTC Tinsukia",sub:"TeaGschwendner · Nr. 109",min:4},
-{name:"Assam Brahmaputra Malty",sub:"TeaGschwendner · Nr. 125",min:5},
-{name:"Traditional Afternoon",sub:"Williamson · Kenia",min:4}
-],
-bag:[
-{name:"Tetley",sub:"Schwarzer Beuteltee",min:3},
-{name:"PG Tips",sub:"Schwarzer Beuteltee",min:3}
-]};
-let mode="loose",selected={loose:0,bag:0};
-let ml=600,cups=2,bagMin=3;
-let total=240,remaining=240,running=false,deadline=0,ticker=null;
+const circumference=2*Math.PI*105;
+$("progress").style.strokeDasharray=String(circumference);
 const voice=new Audio("./tea-finished.mp3");
 voice.preload="auto";
-const circumference=2*Math.PI*105;
-$("progress").style.strokeDasharray=circumference;
-
-function minutes(){
-return mode==="bag"?bagMin:teas.loose[selected.loose].min;
+let chosen=4,total=240,remaining=240,deadline=0,running=false,finished=false,ticker=null;
+function clock(sec){
+const n=Math.max(0,Math.ceil(sec));
+return String(Math.floor(n/60)).padStart(2,"0")+":"+String(n%60).padStart(2,"0");
 }
 function draw(){
-const sec=Math.max(0,Math.ceil(remaining));
-$("clock").textContent=
-String(Math.floor(sec/60)).padStart(2,"0")+":"+
-String(sec%60).padStart(2,"0");
-$("progress").style.strokeDashoffset=
-circumference*(1-Math.max(0,Math.min(1,remaining/total)));
+$("clock").textContent=clock(remaining);
+$("progress").style.strokeDashoffset=String(circumference*(1-Math.min(1,Math.max(0,remaining/total))));
+$("minuteLabel").textContent=chosen+" MIN";
+document.querySelectorAll(".preset").forEach(b=>{
+const active=Number(b.dataset.min)===chosen;
+b.classList.toggle("active",active);
+b.setAttribute("aria-pressed",String(active));
+});
+$("minus").disabled=chosen<=1;
+$("plus").disabled=chosen>=60;
+$("start").textContent=running?"Ⅱ PAUSIEREN":finished?"↺ NEU STARTEN":remaining<total?"▶ FORTSETZEN":"▶ TIMER STARTEN";
+$("reset").hidden=!(running||remaining<total||finished);
+$("state").textContent=finished?"TEA IS READY":running?"BREWING":"BREW TIME";
 }
-function stop(){
-running=false;
-clearInterval(ticker);
-ticker=null;
-$("start").textContent="▶ Starten";
-}
-function reset(){
-stop();
-remaining=total=minutes()*60;
-$("state").textContent="Bereit zum Aufgießen";
+function clearTicker(){if(ticker!==null){clearInterval(ticker);ticker=null;}}
+function stop(){clearTicker();running=false;}
+function setTime(min){
+stop();chosen=Math.max(1,Math.min(60,min));total=remaining=chosen*60;finished=false;
+$("message").textContent="";
 draw();
 }
-function render(){
-$("looseTab").classList.toggle("active",mode==="loose");
-$("bagTab").classList.toggle("active",mode==="bag");
-$("teas").replaceChildren();
-teas[mode].forEach((tea,i)=>{
-const b=document.createElement("button");
-b.className="tea"+(selected[mode]===i?" active":"");
-b.innerHTML="<strong></strong><small></small>";
-b.querySelector("strong").textContent=tea.name;
-b.querySelector("small").textContent=tea.sub;
-b.onclick=()=>{selected[mode]=i;render()};
-$("teas").append(b);
-});
-const bag=mode==="bag";
-$("amountTitle").textContent=bag?"03 / Anzahl Tassen":"03 / Wassermenge";
-$("amount").textContent=bag?cups+(cups===1?" Tasse":" Tassen"):ml+" ml";
-$("amountNote").textContent=bag?
-"1 Tasse = 250 ml · 1 Beutel":"100-ml-Schritte";
-$("dose").textContent=bag?
-cups+(cups===1?" Teebeutel":" Teebeutel"):
-(ml*0.006).toLocaleString("de-DE",{maximumFractionDigits:1})+" Teemaß";
-$("doseNote").textContent=bag?
-(cups*250)+" ml Wasser insgesamt":
-"Gestrichenes TeaGschwendner-Teemaß";
-$("timeChooser").classList.toggle("hidden",!bag);
-document.querySelectorAll("[data-min]").forEach(b=>
-b.classList.toggle("active",Number(b.dataset.min)===bagMin));
-$("minus").disabled=bag?cups<=1:ml<=100;
-$("plus").disabled=bag?cups>=12:ml>=2000;
-reset();
-}
-$("looseTab").onclick=()=>{mode="loose";render()};
-$("bagTab").onclick=()=>{mode="bag";render()};
-$("minus").onclick=()=>{
-if(mode==="bag")cups=Math.max(1,cups-1);
-else ml=Math.max(100,ml-100);
-render();
-};
-$("plus").onclick=()=>{
-if(mode==="bag")cups=Math.min(12,cups+1);
-else ml=Math.min(2000,ml+100);
-render();
-};
-document.querySelectorAll("[data-min]").forEach(b=>{
-b.onclick=()=>{bagMin=Number(b.dataset.min);render()};
-});
+function reset(){setTime(chosen);}
 function playVoice(){
-voice.pause();
-voice.currentTime=0;
-voice.muted=false;
-voice.volume=1;
+voice.pause();voice.currentTime=0;voice.muted=false;voice.volume=1;
 return voice.play();
 }
-$("testSound").onclick=()=>{
-playVoice().then(()=>{
-$("state").textContent="Sprachdatei wird abgespielt";
-}).catch(()=>{
-$("state").textContent="Audio konnte nicht abgespielt werden";
-});
-};
+function unlockVoice(){
+voice.pause();voice.currentTime=0;voice.muted=true;
+const p=voice.play();
+if(p&&typeof p.then==="function"){
+p.then(()=>{voice.pause();voice.currentTime=0;voice.muted=false;}).catch(()=>{voice.muted=false;});
+}else{voice.muted=false;}
+}
 function tick(){
+if(!running)return;
 remaining=Math.max(0,(deadline-Date.now())/1000);
-draw();
 if(remaining<=0){
-stop();
-$("state").textContent="Tee fertig – jetzt entfernen!";
-playVoice().catch(()=>{
-$("state").textContent="Tee fertig – Audio blockiert";
-});
-}
-}
-$("start").onclick=()=>{
-if(running){
-tick();
-stop();
-$("state").textContent="Pausiert";
+stop();remaining=0;finished=true;
+$("message").textContent="Dein Tee ist fertig.";
+draw();
+playVoice().catch(()=>{$("message").textContent="Dein Tee ist fertig. Sprachausgabe wurde blockiert.";});
 return;
 }
-if(remaining<=0)remaining=total;
-voice.pause();
-voice.currentTime=0;
-voice.muted=true;
-const unlock=voice.play();
-if(unlock&&unlock.then){
-unlock.then(()=>{
-voice.pause();
-voice.currentTime=0;
-voice.muted=false;
-}).catch(()=>{voice.muted=false});
+draw();
 }
-running=true;
-deadline=Date.now()+remaining*1000;
-$("start").textContent="Ⅱ Pausieren";
-$("state").textContent="Dein Tee zieht …";
-tick();
-ticker=setInterval(tick,200);
-};
-$("reset").onclick=reset;
-document.addEventListener("visibilitychange",()=>{
-if(!document.hidden&&running)tick();
+$("start").addEventListener("click",()=>{
+if(running){tick();if(!running)return;stop();$("message").textContent="Pausiert.";draw();return;}
+if(finished){remaining=total;finished=false;}
+unlockVoice();
+running=true;deadline=Date.now()+remaining*1000;
+$("message").textContent="";
+tick();ticker=setInterval(tick,200);
 });
-render();
+$("reset").addEventListener("click",reset);
+$("minus").addEventListener("click",()=>setTime(chosen-1));
+$("plus").addEventListener("click",()=>setTime(chosen+1));
+document.querySelectorAll(".preset").forEach(b=>b.addEventListener("click",()=>setTime(Number(b.dataset.min))));
+$("testSound").addEventListener("click",()=>{
+playVoice().then(()=>{$("message").textContent="Sprachdatei wird abgespielt.";})
+.catch(()=>{$("message").textContent="Sprachdatei konnte nicht abgespielt werden.";});
+});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&running)tick();});
+draw();
 })();
 </script>
 </body>
