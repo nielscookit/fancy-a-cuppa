@@ -195,7 +195,7 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 </svg>
 <div class="center">
 <div id="clock" class="clock" role="timer" aria-label="Verbleibende Zeit">04:00</div>
-<div id="state" class="state">BREW TIME</div>
+
 </div>
 </div>
 <div class="stepper">
@@ -303,7 +303,7 @@ $("minus").disabled=chosen<=1;
 $("plus").disabled=chosen>=60;
 $("start").textContent=running?"PAUSIEREN":finished?"NEU STARTEN":remaining<total?"FORTSETZEN":"FANCY A CUPPA";
 $("reset").hidden=!(running||remaining<total||finished);
-$("state").textContent=finished?"TEA IS READY":running?"BREWING":"BREW TIME";
+
 }
 let wakeLock=null;
 async function requestWakeLock(){
