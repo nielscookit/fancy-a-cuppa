@@ -194,6 +194,9 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 .minute-label{word-spacing:-5px}
 .round{display:flex;align-items:center;justify-content:center}
 .round .stepper-icon{display:flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:24px!important;line-height:24px;font-weight:400!important;color:inherit}
+/* Scan-/Foto-Kacheln: gleiche Höhe wie Dosierhilfe, Icon-only */
+.scan-choices .scan-action{height:52px;min-height:52px;padding:0;display:flex;align-items:center;justify-content:center}
+.scan-choices .scan-choice-icon{font-size:24px!important;font-weight:400!important;line-height:24px;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 </head>
@@ -231,7 +234,7 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 <div id="doseContent" hidden>
 <div class="divider"></div>
 <section aria-label="Teezubereitung">
-<div class="scan-choices"><label class="scan-action" for="scanFile" aria-label="Kamera öffnen">SCANNEN</label><label class="scan-action" for="galleryFile">FOTOS</label></div>
+<div class="scan-choices"><label class="scan-action" for="scanFile" aria-label="Scannen" title="Scannen"><span class="material-symbols-outlined scan-choice-icon" aria-hidden="true">document_scanner</span></label><label class="scan-action" for="galleryFile" aria-label="Fotos" title="Fotos"><span class="material-symbols-outlined scan-choice-icon" aria-hidden="true">photo</span></label></div>
 <input class="scan-input" id="scanFile" type="file" accept="image/*" capture="environment">
 <input class="scan-input" id="galleryFile" type="file" accept="image/*">
 <div id="scanPanel" class="scan-panel" hidden>
