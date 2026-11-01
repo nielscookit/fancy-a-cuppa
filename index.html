@@ -137,6 +137,12 @@ button:focus-visible,.tea-option .tea-remove:focus-visible{outline-color:var(--a
 .timer .message:not(:empty){margin:14px 0 0}
 .divider{margin:32px 0;height:1px}
 .scan-choices{margin-top:0}
+
+/* Selected State: neutrales Grau, HSB H0 S0 B20; weiße Beschriftung */
+.preset.active,.volume.active,.preset.active:focus-visible,.volume.active:focus-visible{
+background:#333333!important;color:#fff!important;border:0!important;outline:none!important
+}
+.volume.active span,.volume.active strong{color:#fff!important}
 </style>
 </head>
 <body>
