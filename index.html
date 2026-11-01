@@ -219,6 +219,8 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 .timer .actions:has(#reset:not([hidden])) > #start,
 .timer .actions:has(#reset:not([hidden])) > #reset{flex:1 1 0;min-width:0;min-height:66px;padding:0;display:flex;align-items:center;justify-content:center}
 .timer .actions .timer-action-icon{display:flex;align-items:center;justify-content:center;width:24px;height:24px;font-size:24px!important;line-height:24px;font-weight:400!important}
+/* Play und Pause als gefüllte Material Symbols */
+.timer .actions .timer-play-pause-icon{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 </head>
@@ -344,7 +346,7 @@ $("plus").disabled=chosen>=60;
 const timerActive=running||remaining<total||finished;
 const start=$("start");
 if(timerActive){
-const icon=document.createElement("span");icon.className="material-symbols-outlined timer-action-icon";icon.setAttribute("aria-hidden","true");icon.textContent=running?"pause":"play_arrow";start.replaceChildren(icon);
+const icon=document.createElement("span");icon.className="material-symbols-outlined timer-action-icon timer-play-pause-icon";icon.setAttribute("aria-hidden","true");icon.textContent=running?"pause":"play_arrow";start.replaceChildren(icon);
 start.setAttribute("aria-label",running?"Pausieren":finished?"Neu starten":"Fortsetzen");
 }else{start.textContent="FANCY A CUPPA";start.setAttribute("aria-label","Timer starten");}
 start.classList.toggle("timer-icon-action",timerActive);
