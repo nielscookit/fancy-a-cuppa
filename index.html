@@ -411,7 +411,7 @@ const box=$("volumes");box.replaceChildren();
 volumeOptions.forEach(([id,label,ml])=>{
 const b=document.createElement("button");b.type="button";b.className="volume"+(id===volumeId?" active":"");
 b.setAttribute("aria-pressed",String(id===volumeId));
-if(ml!==null){b.textContent=format(ml);const unit=document.createElement("span");unit.className="volume-unit";unit.textContent="ml";unit.setAttribute("aria-hidden","true");b.append(unit);b.setAttribute("aria-label",label+", "+ml+" Milliliter");}else{const icon=document.createElement("span");icon.className="material-symbols-outlined custom-volume-icon";icon.textContent="tune";icon.setAttribute("aria-hidden","true");b.append(icon);b.setAttribute("aria-label",label);}
+if(ml!==null){b.textContent=ml>=1000?format(ml/1000):format(ml);const unit=document.createElement("span");unit.className="volume-unit";unit.textContent=ml>=1000?"l":"ml";unit.setAttribute("aria-hidden","true");b.append(unit);b.setAttribute("aria-label",label+", "+ml+" Milliliter");}else{const icon=document.createElement("span");icon.className="material-symbols-outlined custom-volume-icon";icon.textContent="tune";icon.setAttribute("aria-hidden","true");b.append(icon);b.setAttribute("aria-label",label);}
 b.addEventListener("click",()=>{volumeId=id;renderVolumes();renderDose();});box.append(b);
 });
 $("customWrap").hidden=volumeId!=="custom";
