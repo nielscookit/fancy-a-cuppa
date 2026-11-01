@@ -104,6 +104,13 @@ button:focus-visible,.tea-option .tea-remove:focus-visible{outline-color:var(--a
 .round{font-weight:700;color:#898785}
 .preset.active,.volume.active{border-width:4px}
 .preset,.volume{border-width:4px}
+
+/* Finale UI-Regeln: gleichmäßige Typografie und sichtbarer Selected State. */
+.round{color:#aaa8a6!important;font-weight:700!important}
+.preset,.volume{border:0!important;outline:0;outline-offset:-6px;background:#ecebea!important;color:#292929!important}
+.preset.active,.volume.active{border:0!important;outline:6px solid var(--accent)!important;outline-offset:-6px;background:#ecebea!important;color:#292929!important}
+.preset.active:focus-visible,.volume.active:focus-visible{outline:6px solid var(--accent)!important}
+.preset,.volume,.scan-choices .scan-action,.tea-trigger,.scan,.scan-actions button,.primary,.secondary,.brew-action{font-size:14px}
 </style>
 </head>
 <body>
@@ -132,14 +139,14 @@ button:focus-visible,.tea-option .tea-remove:focus-visible{outline-color:var(--a
 <button type="button" class="preset" data-min="5">5 MIN</button>
 </div>
 <div class="actions">
-<button id="start" type="button" class="primary">▶ TIMER STARTEN</button>
-<button id="reset" type="button" class="secondary" hidden>↺ RESET</button>
+<button id="start" type="button" class="primary">TIMER STARTEN</button>
+<button id="reset" type="button" class="secondary" hidden>RESET</button>
 </div>
 <p id="message" class="message" role="status" aria-live="polite"></p>
 </section>
 <div class="divider"></div>
 <section aria-label="Teezubereitung">
-<div class="scan-choices"><label class="scan-action" for="scanFile" aria-label="Kamera öffnen">▣ SCANNEN</label><label class="scan-action" for="galleryFile">FOTOS</label></div>
+<div class="scan-choices"><label class="scan-action" for="scanFile" aria-label="Kamera öffnen">SCANNEN</label><label class="scan-action" for="galleryFile">FOTOS</label></div>
 <input class="scan-input" id="scanFile" type="file" accept="image/*" capture="environment">
 <input class="scan-input" id="galleryFile" type="file" accept="image/*">
 <div id="scanPanel" class="scan-panel" hidden>
@@ -164,7 +171,7 @@ button:focus-visible,.tea-option .tea-remove:focus-visible{outline-color:var(--a
 <label><span class="field-label">TEE-NAME</span><input id="freeName" maxlength="80" value="Eigener Tee"></label>
 <label><span class="field-label">TEEART</span><select id="freeType"><option value="loose">Loser Tee</option><option value="bag">Teebeutel</option></select></label>
 <label><span id="freeDoseLabel" class="field-label">TEEMAẞ PRO LITER</span><input id="freeDose" type="number" min="0.1" max="100" step="0.1" value="6" inputmode="decimal"></label>
-<button id="saveTea" type="button" class="scan">+ TEE SPEICHERN</button>
+<button id="saveTea" type="button" class="scan">TEE SPEICHERN</button>
 </div>
 <div id="teaDetails" hidden><div class="section-title">WASSERMENGE</div>
 <div class="volumes" id="volumes" role="group" aria-label="Wassermenge"></div>
@@ -183,11 +190,11 @@ button:focus-visible,.tea-option .tea-remove:focus-visible{outline-color:var(--a
 <button id="brewPlus" class="round" type="button" aria-label="Ziehzeit erhöhen">+</button>
 </div>
 </div>
-<button id="brewStart" class="primary brew-action" type="button">▶ TIMER STARTEN · 4 MIN</button>
+<button id="brewStart" class="primary brew-action" type="button">TIMER STARTEN · 4 MIN</button>
 <p id="brewMessage" class="hint" role="status"></p>
 </div>
 </section>
-<button id="testSound" type="button" class="test" hidden>▶ STIMME TESTEN</button>
+<button id="testSound" type="button" class="test" hidden>STIMME TESTEN</button>
 <footer>Die Sprachausgabe kann durch iOS eingeschränkt sein.<br>Für eine zuverlässigere Wiedergabe die App geöffnet lassen.</footer>
 </main>
 <script>
@@ -214,7 +221,7 @@ b.setAttribute("aria-pressed",String(active));
 });
 $("minus").disabled=chosen<=1;
 $("plus").disabled=chosen>=60;
-$("start").textContent=running?"Ⅱ PAUSIEREN":finished?"↺ NEU STARTEN":remaining<total?"▶ FORTSETZEN":"▶ TIMER STARTEN";
+$("start").textContent=running?"PAUSIEREN":finished?"NEU STARTEN":remaining<total?"FORTSETZEN":"TIMER STARTEN";
 $("reset").hidden=!(running||remaining<total||finished);
 $("state").textContent=finished?"TEA IS READY":running?"BREWING":"BREW TIME";
 }
@@ -291,12 +298,12 @@ function renderTeas(){
 const sel=$("teaSelect");sel.replaceChildren();
 const placeholder=document.createElement("option");placeholder.value="";placeholder.textContent="Tee wählen";sel.append(placeholder);
 [...builtins,...saved].forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent=t.name;sel.append(o);});
-const free=document.createElement("option");free.value="free";free.textContent="+ Freie Dosierung";sel.append(free);sel.value=selectedTea;
-$("teaChosen").textContent=([ ...builtins,...saved].find(t=>t.id===selectedTea)||{name:selectedTea==="free"?"+ Freie Dosierung":"Tee wählen"}).name;
+const free=document.createElement("option");free.value="free";free.textContent="Freie Dosierung";sel.append(free);sel.value=selectedTea;
+$("teaChosen").textContent=([ ...builtins,...saved].find(t=>t.id===selectedTea)||{name:selectedTea==="free"?"Freie Dosierung":"Tee wählen"}).name;
 }
 function renderTeaMenu(){
 const menu=$("teaMenu");menu.replaceChildren();
-[...builtins,...saved,{id:"free",name:"+ Freie Dosierung"}].forEach(t=>{
+[...builtins,...saved,{id:"free",name:"Freie Dosierung"}].forEach(t=>{
 const row=document.createElement("div");row.className="tea-option";
 const choose=document.createElement("button");choose.type="button";choose.className="tea-choice";choose.textContent=t.name;
 choose.addEventListener("click",()=>{selectedTea=t.id;$("teaSelect").value=t.id;renderTeas();selectTea();closeTeaMenu();});
@@ -336,7 +343,7 @@ $("doseHint").textContent=tea.type==="bag"?"Basis: "+format(tea.dose)+" Beutel p
 if(tea.provisional)$("doseHint").textContent+=" Richtwert – bitte Packungsangabe prüfen.";
 $("brewMinutes").textContent=brewMin+" MIN";
 $("brewMinus").disabled=brewMin<=1;$("brewPlus").disabled=brewMin>=60;
-$("brewStart").textContent="▶ TIMER STARTEN · "+brewMin+" MIN";
+$("brewStart").textContent="TIMER STARTEN · "+brewMin+" MIN";
 $("brewStart").disabled=!valid;
 $("freeDoseLabel").textContent=$("freeType").value==="bag"?"TEEBEUTEL PRO LITER":"TEEMAẞ PRO LITER";
 }
