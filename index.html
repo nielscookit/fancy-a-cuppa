@@ -123,12 +123,12 @@ footer{text-align:center;color:#999;font-size:11px;line-height:1.7;margin-top:18
 <label><span class="field-label">FÜR WASSERMENGE (ML)</span><input id="scanBase" type="number" min="50" max="5000" step="any" inputmode="numeric" placeholder="z. B. 250"></label>
 <label><span class="field-label">ZIEHZEIT (MINUTEN)</span><input id="scanMin" type="number" min="1" max="60" step="1" inputmode="numeric" placeholder="Bitte prüfen / eintragen"></label>
 <p class="hint">Erkannte Werte sind Vorschläge. Bitte mit der Packung vergleichen. Unterschiedliche Löffelarten werden nicht gleichgesetzt.</p>
-<details><summary>Erkannten Text ansehen</summary><p id="scanRaw" class="hint"></p></details>
+<p id="scanRaw" hidden></p>
 <div class="scan-actions"><button id="scanBack" type="button">ZURÜCK</button><button id="scanSave" class="confirm" type="button">3 / SPEICHERN</button></div>
 </div>
 <p id="scanFeedback" class="hint" role="status"></p>
 </div>
-<div class="tea-picker"><button id="teaTrigger" class="tea-trigger" type="button" aria-expanded="false" aria-controls="teaMenu"><span id="teaChosen">Tee wählen</span><span aria-hidden="true">⌄</span></button><div id="teaMenu" class="tea-menu" hidden></div><select id="teaSelect" aria-label="Tee wählen" hidden></select><button id="deleteTea" hidden type="button"></button></div>
+<div class="tea-picker"><button id="teaTrigger" class="tea-trigger" type="button" aria-expanded="false" aria-controls="teaMenu"><span id="teaChosen">Tee wählen</span><span aria-hidden="true">⌄</span></button><div id="teaMenu" class="tea-menu" hidden></div><select id="teaSelect" aria-label="Tee wählen" hidden></select></div>
 <div id="freeFields" class="free-fields" hidden>
 <label><span class="field-label">TEE-NAME</span><input id="freeName" maxlength="80" value="Eigener Tee"></label>
 <label><span class="field-label">TEEART</span><select id="freeType"><option value="loose">Loser Tee</option><option value="bag">Teebeutel</option></select></label>
@@ -305,7 +305,7 @@ $("freeDoseLabel").textContent=$("freeType").value==="bag"?"TEEBEUTEL PRO LITER"
 function selectTea(){
 $("teaDetails").hidden=!selectedTea;
 $("freeFields").hidden=selectedTea!=="free";
-$("deleteTea").hidden=!saved.some(t=>t.id===selectedTea);
+
 if(!selectedTea)return;
 if(selectedTea!=="free")brewMin=activeTea().min;
 renderDose();
