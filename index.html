@@ -175,6 +175,7 @@ main{padding-top:12px}
 /* Einheitliche Button-Typografie */
 button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!important}
 .volume .material-symbols-outlined{font-size:24px!important;font-weight:400!important}
+.tea-trigger .tea-chevron{font-size:16px!important;line-height:16px;font-weight:400!important;flex-shrink:0}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 </head>
@@ -232,7 +233,7 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 </div>
 <p id="scanFeedback" class="hint" role="status"></p>
 </div>
-<div class="tea-picker"><button id="teaTrigger" class="tea-trigger" type="button" aria-expanded="false" aria-controls="teaMenu"><span id="teaChosen">Tee wählen</span><span aria-hidden="true">⌄</span></button><div id="teaMenu" class="tea-menu" hidden></div><select id="teaSelect" aria-label="Tee wählen" hidden></select></div>
+<div class="tea-picker"><button id="teaTrigger" class="tea-trigger" type="button" aria-expanded="false" aria-controls="teaMenu"><span id="teaChosen">Tee wählen</span><span class="material-symbols-outlined tea-chevron" aria-hidden="true">keyboard_arrow_down</span></button><div id="teaMenu" class="tea-menu" hidden></div><select id="teaSelect" aria-label="Tee wählen" hidden></select></div>
 <div id="freeFields" class="free-fields" hidden>
 <label><span class="field-label">TEE-NAME</span><input id="freeName" maxlength="80" value="Eigener Tee"></label>
 <label><span class="field-label">TEEART</span><select id="freeType"><option value="loose">Loser Tee</option><option value="bag">Teebeutel</option></select></label>
