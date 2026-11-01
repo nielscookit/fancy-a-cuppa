@@ -388,7 +388,7 @@ if(loose&&(water||/\b(?:pro|per|für|for)\s+(?:eine\s+)?(?:tasse|cup)\b/i.test(t
 const u=loose[2].toLowerCase();
 const unit=/beutel|bags?/.test(u)?"bag":/teelöffel|tsp|teaspoon/.test(u)?"tsp":/teemaß|teemass/.test(u)?"measure":"g";
 $("scanDose").value=loose[1].replace(",",".");$("scanUnit").value=unit;
-$("scanBase").value=water?String(Number(water[1].replace(",","."))*(water[2].toLowerCase()==="ml"?1:1000)):"250";
+$("scanBase").value=water?String(Number(water[1].replace(",","."))*(water[2].toLowerCase()==="ml"?1:1000)):"";
 $("scanType").value=unit==="bag"?"bag":"loose";
 }
 }
