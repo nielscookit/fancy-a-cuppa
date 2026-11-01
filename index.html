@@ -350,7 +350,7 @@ const builtins=[
 {id:"tetley",name:"Tetley",type:"bag",dose:4,min:3,provisional:true},
 {id:"pgtips",name:"PG Tips",type:"bag",dose:4,min:3,provisional:true}
 ];
-const volumeOptions=[["cup","Tasse",250],["largecup","Große Tasse",350],["smallpot","Kleine Kanne",500],["myPot","Meine Kanne",600],["pot","Kanne",1000],["largepot","Große Kanne",1500],["custom","Eigene Menge",null]];
+const volumeOptions=[["cup","Tasse",250],["smallpot","Kleine Kanne",500],["pot","Kanne",1000],["largepot","Große Kanne",1500],["custom","Eigene Menge",null]];
 let saved=[];
 try{const data=JSON.parse(localStorage.getItem("fancy-cuppa-teas-v1")||"[]");if(Array.isArray(data))saved=data.filter(t=>t&&typeof t.name==="string"&&["loose","bag"].includes(t.type)&&Number.isFinite(t.dose)&&t.dose>0&&Number.isFinite(t.min)&&t.min>=1);}catch(e){}
 let selectedTea="",volumeId="myPot",brewMin=4;
