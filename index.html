@@ -252,10 +252,10 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 <button id="plus" class="round" type="button" aria-label="One minute more"><span class="material-symbols-outlined stepper-icon" aria-hidden="true">add</span></button>
 </div>
 <div class="presets" role="group" aria-label="Choose brewing time">
-<button type="button" class="preset" data-min="2" aria-label="2 Minuten">2</button>
-<button type="button" class="preset" data-min="3" aria-label="3 Minuten">3</button>
-<button type="button" class="preset" data-min="4" aria-label="4 Minuten">4</button>
-<button type="button" class="preset" data-min="5" aria-label="5 Minuten">5</button>
+<button type="button" class="preset" data-min="2" aria-label="2 minutes">2</button>
+<button type="button" class="preset" data-min="3" aria-label="3 minutes">3</button>
+<button type="button" class="preset" data-min="4" aria-label="4 minutes">4</button>
+<button type="button" class="preset" data-min="5" aria-label="5 minutes">5</button>
 </div>
 <div class="actions">
 <button id="start" type="button" class="primary">FANCY A CUPPA</button>
@@ -519,7 +519,7 @@ const name=$("freeName").value.trim(),qty=Number($("freeDose").value),base=Numbe
 const missing=["freeName","freeDose","freeUnit","freeBase","freeMin"].find(id=>!$(id).value.trim());
 if(missing){$("freeFeedback").textContent="Please fill in all fields." ;$(missing).focus();return;}
 if(!name||!unit||!Number.isFinite(qty)||qty<=0||!Number.isFinite(base)||base<50||base>5000||!Number.isInteger(mins)||mins<1||mins>60){$("freeFeedback").textContent="Check the quantity, water volume and brewing time.";return;}
-if((type==="bag")!==(unit==="bag")){$("freeFeedback").textContent="Tea type und Einheit müssen zusammenpassen.";return;}
+if((type==="bag")!==(unit==="bag")){$("freeFeedback").textContent="Tea type and unit must match.";return;}
 const dose=qty*1000/base;
 if(dose>1000){$("freeFeedback").textContent="Tea quantity is outside the allowed range.";return;}
 const tea={id:"saved-"+Date.now(),name,type,dose,min:mins,unit,provisional:false};
@@ -644,7 +644,7 @@ if(!name||!unit||!Number.isFinite(qty)||qty<=0||!Number.isFinite(base)||base<50|
 $("scanFeedback").textContent="Check the tea name, quantity, unit, water volume and brewing time.";return;
 }
 if((type==="bag")!==(unit==="bag")){
-$("scanFeedback").textContent="Tea type und Dosierungseinheit müssen zusammenpassen.";return;
+$("scanFeedback").textContent="Tea type and quantity unit must match.";return;
 }
 const dose=qty*1000/base;
 if(dose<=0||dose>1000){$("scanFeedback").textContent="Tea quantity is outside the allowed range.";return;}
