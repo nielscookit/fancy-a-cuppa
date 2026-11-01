@@ -131,6 +131,12 @@ button:focus-visible,.tea-option .tea-remove:focus-visible{outline-color:var(--a
 .timer .message{margin-bottom:0}
 .divider{margin:24px 0}
 .tea-picker{margin-bottom:16px}
+
+/* Exakte sichtbare Elementabstände: Button → Linie → Scan */
+.timer .message:empty{display:none}
+.timer .message:not(:empty){margin:14px 0 0}
+.divider{margin:32px 0;height:1px}
+.scan-choices{margin-top:0}
 </style>
 </head>
 <body>
