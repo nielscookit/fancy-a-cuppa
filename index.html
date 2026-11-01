@@ -215,6 +215,8 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 #scanHeading[hidden],#scanStatus[hidden]{display:none!important}
 #freeFields .scan-actions{margin-top:0}
 #freeFields .scan-actions button{flex:1;min-height:52px}
+/* Pressed-State des Hauptbuttons: wie Selected-State */
+#start:active{background:#333333!important;color:#fff!important}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 </head>
@@ -338,9 +340,16 @@ b.setAttribute("aria-pressed",String(active));
 $("minus").disabled=chosen<=1;
 $("plus").disabled=chosen>=60;
 $("start").textContent=running?"PAUSIEREN":finished?"NEU STARTEN":remaining<total?"FORTSETZEN":"FANCY A CUPPA";
+if($("start").matches(":active"))$("start").textContent="Go on then, mate!";
 $("reset").hidden=!(running||remaining<total||finished);
 
 }
+const mainStart=$("start");
+mainStart.addEventListener("pointerdown",()=>{mainStart.textContent="Go on then, mate!";});
+const restoreStartLabel=()=>{if(!mainStart.matches(":active"))draw();};
+mainStart.addEventListener("pointerup",restoreStartLabel);
+mainStart.addEventListener("pointercancel",restoreStartLabel);
+mainStart.addEventListener("pointerleave",restoreStartLabel);
 let wakeLock=null;
 async function requestWakeLock(){
 if(!running||document.hidden||!("wakeLock" in navigator))return;
