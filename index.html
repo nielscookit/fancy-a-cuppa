@@ -374,6 +374,30 @@ body.timer-focus .timer .actions{
 @media(max-height:680px){
   body.timer-focus .timer .actions{margin-top:32px}
 }
+
+/* Timer label card: solid white surface, 12px inner padding, no glyph clipping. */
+body.timer-focus .timer .center{
+  margin-top:0;
+  width:auto;
+  overflow:visible;
+}
+body.timer-focus .timer .clock{
+  display:block;
+  width:max-content;
+  max-width:100%;
+  padding:12px;
+  background:#fff;
+  border-radius:0;
+  font-family:Roboto,Arial,sans-serif;
+  font-size:48px;
+  font-style:italic;
+  font-weight:700;
+  line-height:1.2;
+  letter-spacing:0;
+  white-space:nowrap;
+  overflow:visible;
+  color:#908C36;
+}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400,0..1,0" rel="stylesheet">
 </head>
