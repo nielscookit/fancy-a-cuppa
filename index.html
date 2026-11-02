@@ -518,13 +518,36 @@ const $=id=>document.getElementById(id);
 const focusExperiment=new URLSearchParams(location.search).get("classic")!=="1";
 function syncTimerFocus(active){document.body.classList.toggle("timer-focus",focusExperiment&&active);}
 
+let doseCloseToken=0;
 $("doseToggle").addEventListener("click",()=>{
-const open=$("doseContent").hidden;
-$("doseContent").hidden=!open;
-$("doseToggle").classList.toggle("active",open);
-$("doseToggle").setAttribute("aria-expanded",String(open));
-$("doseToggle").setAttribute("aria-pressed",String(open));
-if(open){requestAnimationFrame(()=>{const top=$("doseToggle").getBoundingClientRect().top+window.scrollY-24;window.scrollTo({top:Math.max(0,top),behavior:"smooth"});});}
+const toggle=$("doseToggle"),content=$("doseContent");
+const opening=content.hidden;
+const token=++doseCloseToken;
+if(opening){
+  content.hidden=false;
+  toggle.classList.add("active");
+  toggle.setAttribute("aria-expanded","true");
+  toggle.setAttribute("aria-pressed","true");
+  requestAnimationFrame(()=>{
+    if(token!==doseCloseToken)return;
+    const top=toggle.getBoundingClientRect().top+window.scrollY-24;
+    window.scrollTo({top:Math.max(0,top),behavior:"smooth"});
+  });
+}else{
+  // Keep the expanded page height until the return scroll has finished.
+  window.scrollTo({top:0,behavior:"smooth"});
+  const started=performance.now();
+  function finishClose(){
+    if(token!==doseCloseToken)return;
+    if(window.scrollY<=2 || performance.now()-started>1400){
+      content.hidden=true;
+      toggle.classList.remove("active");
+      toggle.setAttribute("aria-expanded","false");
+      toggle.setAttribute("aria-pressed","false");
+    }else requestAnimationFrame(finishClose);
+  }
+  requestAnimationFrame(finishClose);
+}
 });
 
 const replies={
