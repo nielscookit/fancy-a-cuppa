@@ -524,7 +524,7 @@ $("doseContent").hidden=!open;
 $("doseToggle").classList.toggle("active",open);
 $("doseToggle").setAttribute("aria-expanded",String(open));
 $("doseToggle").setAttribute("aria-pressed",String(open));
-if(open){requestAnimationFrame(()=>{$("doseToggle").scrollIntoView({behavior:"smooth",block:"start"});});}
+if(open){requestAnimationFrame(()=>{const top=$("doseToggle").getBoundingClientRect().top+window.scrollY-24;window.scrollTo({top:Math.max(0,top),behavior:"smooth"});});}
 });
 
 const replies={
