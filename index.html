@@ -358,6 +358,13 @@ function playReply(which){
     console.warn("Tea reply playback failed:",which,err);
   });
 }
+const clickSound=new Audio("./click.mp3");
+clickSound.preload="auto";
+function playClick(){
+  clickSound.pause();
+  try{clickSound.currentTime=0;}catch(e){}
+  clickSound.play().catch(err=>console.warn("Click feedback unavailable:",err));
+}
 const voice=new Audio("./tea-finished.mp3");
 voice.preload="auto";
 let chosen=4,total=240,remaining=240,deadline=0,running=false,finished=false,ticker=null;
@@ -442,9 +449,9 @@ $("message").textContent="";
 tick();ticker=setInterval(tick,200);requestWakeLock();
 });
 $("reset").addEventListener("click",reset);
-$("minus").addEventListener("click",()=>setTime(chosen-1));
-$("plus").addEventListener("click",()=>setTime(chosen+1));
-document.querySelectorAll(".preset").forEach(b=>b.addEventListener("click",()=>setTime(Number(b.dataset.min))));
+$("minus").addEventListener("click",()=>{playClick();setTime(chosen-1);});
+$("plus").addEventListener("click",()=>{playClick();setTime(chosen+1);});
+document.querySelectorAll(".preset").forEach(b=>b.addEventListener("click",()=>{playClick();setTime(Number(b.dataset.min));}));
 $("testSound").addEventListener("click",()=>{
 playVoice().then(()=>{$("message").textContent="Playing the sound.";})
 .catch(()=>{$("message").textContent="Couldn’t play the sound.";});
