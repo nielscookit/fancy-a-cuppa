@@ -348,6 +348,32 @@ body.timer-focus .timer .clock{font-size:clamp(42px,11vw,58px)}
 #teaDetails .result{margin-top:0}
 .brew-step{margin-top:24px}
 .brew-action{margin-top:24px}
+
+/* Focus timer: centered cup/time group with separated actions. */
+body.timer-focus .timer{
+  gap:0;
+}
+body.timer-focus .timer .dial{
+  gap:0;
+}
+body.timer-focus .timer .center{
+  margin-top:-8px;
+}
+body.timer-focus .timer .clock{
+  font-family:Roboto,Arial,sans-serif;
+  font-style:italic;
+  font-weight:700;
+  color:#908C36;
+  letter-spacing:-1px;
+  line-height:1;
+}
+body.timer-focus .timer .actions{
+  margin-top:clamp(48px,12vh,128px);
+  gap:12px;
+}
+@media(max-height:680px){
+  body.timer-focus .timer .actions{margin-top:32px}
+}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400,0..1,0" rel="stylesheet">
 </head>
