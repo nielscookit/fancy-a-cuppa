@@ -230,6 +230,16 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 .material-symbols-outlined{font-size:28px!important;line-height:28px!important;font-variation-settings:'opsz' 28,'wght' 400,'GRAD' 0,'FILL' 0}
 .round .stepper-icon,.scan-choices .scan-choice-icon,.timer .actions .timer-action-icon,.scan-actions .save-cancel-icon,.tea-trigger .tea-chevron{width:28px;height:28px;font-size:28px!important;line-height:28px!important}
 .timer .actions .timer-play-pause-icon{font-variation-settings:'opsz' 28,'wght' 400,'GRAD' 0,'FILL' 1}
+/* Reversible focus experiment: append ?classic=1 to use the original layout. */
+body.timer-focus{overflow:hidden}
+body.timer-focus main{max-width:none;height:100dvh;min-height:100svh;padding:max(16px,env(safe-area-inset-top)) 20px max(16px,env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:center}
+body.timer-focus main>:not(.timer){display:none!important}
+body.timer-focus .timer{width:100%;max-width:480px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(18px,4vh,32px)}
+body.timer-focus .timer>.stepper,body.timer-focus .timer>.presets,body.timer-focus .timer>.message{display:none!important}
+body.timer-focus .timer .dial{width:min(360px,calc(100vw - 40px),calc(100dvh - 160px));margin:0}
+body.timer-focus .timer .clock{font-size:clamp(62px,17vw,86px)}
+body.timer-focus .timer .actions{width:100%;max-width:360px}
+@media(prefers-reduced-motion:reduce){body.timer-focus .progress{transition:none}}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400,0..1,0" rel="stylesheet">
 </head>
@@ -324,6 +334,9 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 (()=>{
 "use strict";
 const $=id=>document.getElementById(id);
+const focusExperiment=new URLSearchParams(location.search).get("classic")!=="1";
+function syncTimerFocus(active){document.body.classList.toggle("timer-focus",focusExperiment&&active);}
+
 $("doseToggle").addEventListener("click",()=>{
 playReply("preference");
 const open=$("doseContent").hidden;
@@ -447,6 +460,7 @@ b.setAttribute("aria-pressed",String(active));
 $("minus").disabled=chosen<=1;
 $("plus").disabled=chosen>=60;
 const timerActive=running||remaining<total||finished;
+syncTimerFocus(timerActive);
 const start=$("start");
 if(timerActive){
 const icon=document.createElement("span");icon.className="material-symbols-outlined timer-action-icon timer-play-pause-icon";icon.setAttribute("aria-hidden","true");icon.textContent=running?"pause":"play_arrow";start.replaceChildren(icon);
@@ -621,7 +635,7 @@ $("brewStart").addEventListener("click",()=>{
 if($("brewStart").disabled)return;
 setTime(brewMin);
 $("start").click();
-window.scrollTo({top:0,behavior:"smooth"});
+window.scrollTo({top:0,behavior:focusExperiment?"instant":"smooth"});
 });
 $("saveTea").addEventListener("click",()=>{
 const name=$("freeName").value.trim(),qty=Number($("freeDose").value),base=Number($("freeBase").value),mins=Number($("freeMin").value),unit=$("freeUnit").value,type=$("freeType").value;
