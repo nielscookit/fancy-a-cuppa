@@ -404,7 +404,14 @@ function releaseWakeLock(){
 if(wakeLock){const lock=wakeLock;wakeLock=null;lock.release().catch(()=>{});}
 }
 function clearTicker(){if(ticker!==null){clearInterval(ticker);ticker=null;}}
-function stop(){clearTicker();running=false;releaseWakeLock();}
+function stop(){
+  clearTicker();
+  running=false;
+  const brewAudio=replies.offer;
+  brewAudio.pause();
+  try{brewAudio.currentTime=0;}catch(e){}
+  releaseWakeLock();
+}
 function setTime(min){
 stop();warnedThirty=false;chosen=Math.max(1,Math.min(60,min));total=remaining=chosen*60;finished=false;
 $("message").textContent="";
