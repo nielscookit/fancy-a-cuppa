@@ -338,7 +338,6 @@ const focusExperiment=new URLSearchParams(location.search).get("classic")!=="1";
 function syncTimerFocus(active){document.body.classList.toggle("timer-focus",focusExperiment&&active);}
 
 $("doseToggle").addEventListener("click",()=>{
-playReply("preference");
 const open=$("doseContent").hidden;
 $("doseContent").hidden=!open;
 $("doseToggle").classList.toggle("active",open);
