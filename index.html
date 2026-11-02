@@ -240,6 +240,14 @@ body.timer-focus .timer .dial{width:min(360px,calc(100vw - 40px),calc(100dvh - 1
 body.timer-focus .timer .clock{font-size:clamp(62px,17vw,86px)}
 body.timer-focus .timer .actions{width:100%;max-width:360px}
 @media(prefers-reduced-motion:reduce){body.timer-focus .progress{transition:none}}
+
+/* Tea-video layout preparation: no dial or presets in setup, no progress ring in focus. */
+body:not(.timer-focus) .timer .dial{display:none}
+body.timer-focus .timer .dial{display:flex;align-items:center;justify-content:center}
+body.timer-focus .timer .center{position:static}
+.timer > .stepper{margin:28px 0 24px;gap:18px}
+.timer > .stepper .round{width:72px;height:72px;min-width:72px;border-radius:50%}
+.timer > .stepper .minute-label{min-width:104px}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400,0..1,0" rel="stylesheet">
 </head>
@@ -247,25 +255,15 @@ body.timer-focus .timer .actions{width:100%;max-width:360px}
 <main>
 <section class="timer" aria-label="Tea timer">
 <div class="dial">
-<svg viewBox="0 0 240 240" aria-hidden="true">
-<circle class="track" cx="120" cy="120" r="105"></circle>
-<circle id="progress" class="progress" cx="120" cy="120" r="105"></circle>
-</svg>
 <div class="center">
-<div id="clock" class="clock" role="timer" aria-label="Time remaining">04:00</div>
+<div id="clock" class="clock" role="timer" aria-label="Time remaining">02:00</div>
 
 </div>
 </div>
 <div class="stepper">
 <button id="minus" class="round" type="button" aria-label="One minute less"><span class="material-symbols-outlined stepper-icon" aria-hidden="true">remove</span></button>
-<div id="minuteLabel" class="minute-label">4 MIN</div>
+<div id="minuteLabel" class="minute-label">2 MIN</div>
 <button id="plus" class="round" type="button" aria-label="One minute more"><span class="material-symbols-outlined stepper-icon" aria-hidden="true">add</span></button>
-</div>
-<div class="presets" role="group" aria-label="Choose brewing time">
-<button type="button" class="preset" data-min="2" aria-label="2 minutes">2</button>
-<button type="button" class="preset" data-min="3" aria-label="3 minutes">3</button>
-<button type="button" class="preset" data-min="4" aria-label="4 minutes">4</button>
-<button type="button" class="preset" data-min="5" aria-label="5 minutes">5</button>
 </div>
 <div class="actions">
 <button id="start" type="button" class="primary">FANCY A CUPPA?</button>
@@ -346,8 +344,6 @@ $("doseToggle").setAttribute("aria-pressed",String(open));
 if(open){requestAnimationFrame(()=>{$("doseToggle").scrollIntoView({behavior:"smooth",block:"start"});});}
 });
 
-const circumference=2*Math.PI*105;
-$("progress").style.strokeDasharray=String(circumference);
 const replies={
   offer:new Audio("./Brew.mp3"),
   almost:new Audio("./AlmostTime.mp3"),
@@ -441,7 +437,7 @@ function playClick(){
 }
 const voice=new Audio("./tea-finished.mp3");
 voice.preload="auto";
-let chosen=4,total=240,remaining=240,deadline=0,running=false,finished=false,ticker=null;
+let chosen=2,total=120,remaining=120,deadline=0,running=false,finished=false,ticker=null;
 let warnedThirty=false;
 function clock(sec){
 const n=Math.max(0,Math.ceil(sec));
@@ -449,13 +445,7 @@ return String(Math.floor(n/60)).padStart(2,"0")+":"+String(n%60).padStart(2,"0")
 }
 function draw(){
 $("clock").textContent=clock(remaining);
-$("progress").style.strokeDashoffset=String(circumference*(1-Math.min(1,Math.max(0,remaining/total))));
 $("minuteLabel").textContent=chosen+" MIN";
-document.querySelectorAll(".preset").forEach(b=>{
-const active=Number(b.dataset.min)===chosen;
-b.classList.toggle("active",active);
-b.setAttribute("aria-pressed",String(active));
-});
 $("minus").disabled=chosen<=1;
 $("plus").disabled=chosen>=60;
 const timerActive=running||remaining<total||finished;
@@ -534,7 +524,6 @@ tick();ticker=setInterval(tick,200);requestWakeLock();
 $("reset").addEventListener("click",reset);
 $("minus").addEventListener("click",()=>{playClick();setTime(chosen-1);});
 $("plus").addEventListener("click",()=>{playClick();setTime(chosen+1);});
-document.querySelectorAll(".preset").forEach(b=>b.addEventListener("click",()=>{playClick();setTime(Number(b.dataset.min));}));
 $("testSound").addEventListener("click",()=>{
 playVoice().then(()=>{$("message").textContent="Playing the sound.";})
 .catch(()=>{$("message").textContent="Couldn’t play the sound.";});
