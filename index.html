@@ -479,18 +479,18 @@ function videoSync(){
  requestAnimationFrame(()=>steepVideo.classList.add("visible"));
 }
 function syncFillSpeed(){
- const audioDuration=replies.offer.duration;
- const videoDuration=fillVideo.duration;
- if(Number.isFinite(audioDuration)&&audioDuration>0&&Number.isFinite(videoDuration)&&videoDuration>0){
-   fillDuration=videoDuration;
-   // Stretch the visual filling sequence to the length of the existing pouring sound.
-   fillVideo.playbackRate=Math.max(0.25,Math.min(4,videoDuration/audioDuration));
- }
+ // Keep the original filling movement; end the pouring sound when the fill ends.
+ fillVideo.playbackRate=1;
+ if(Number.isFinite(fillVideo.duration)&&fillVideo.duration>0)fillDuration=fillVideo.duration;
 }
 fillVideo.addEventListener("loadedmetadata",()=>{if(Number.isFinite(fillVideo.duration)&&fillVideo.duration>0)fillDuration=fillVideo.duration;syncFillSpeed();});
 replies.offer.addEventListener("loadedmetadata",syncFillSpeed);
 replies.offer.addEventListener("durationchange",syncFillSpeed);
-fillVideo.addEventListener("ended",()=>{fillCompleted=true;fillElapsed=fillDuration;videoSync();});
+fillVideo.addEventListener("ended",()=>{
+ fillCompleted=true;fillElapsed=fillDuration;
+ replies.offer.pause();try{replies.offer.currentTime=0;}catch(e){}
+ videoSync();
+});
 fillVideo.addEventListener("error",()=>console.warn("Please upload fill_app.mp4 to the repository root"));
 steepVideo.addEventListener("error",()=>console.warn("Could not load steamLoop_app.mp4"));
 function clock(sec){
@@ -568,7 +568,11 @@ $("start").addEventListener("click",()=>{
 
 if(running){tick();if(!running)return;if(!fillCompleted)fillElapsed=Math.min(fillDuration,fillElapsed+(Date.now()-fillStartedAt)/1000);stop();$("message").textContent="";draw();return;}
 if(finished){remaining=total;finished=false;warnedThirty=false;videoReset();}
-playReply("offer");
+if(!fillCompleted){
+ playReply("offer");
+ // On resume, continue the pouring sound at the same position as the filling video.
+ try{replies.offer.currentTime=Math.min(fillElapsed,Math.max(0,(replies.offer.duration||fillDuration)-0.05));}catch(e){}
+}
 if(clickContext&&clickContext.state!=="running")clickContext.resume().catch(()=>{});
 if(replies.almost.readyState===0)replies.almost.load();
 unlockVoice();
