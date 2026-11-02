@@ -398,6 +398,36 @@ body.timer-focus .timer .clock{
   overflow:visible;
   color:#908C36;
 }
+
+/* Mobile setup: centered timer, bottom-aligned actions, scrollable dose page. */
+@media (max-width: 600px){
+  body:not(.timer-focus) main{
+    padding-top:0;
+    padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+  body:not(.timer-focus) .timer{
+    min-height:calc(100dvh - 66px - 12px - 24px - env(safe-area-inset-bottom, 0px));
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    position:relative;
+  }
+  body:not(.timer-focus) .timer > .stepper{
+    margin:auto 0;
+    flex-shrink:0;
+  }
+  body:not(.timer-focus) .timer > .actions{
+    flex-shrink:0;
+    margin-top:0;
+  }
+  body:not(.timer-focus) #doseToggle{
+    margin-top:12px;
+    scroll-margin-top:calc(24px + env(safe-area-inset-top, 0px));
+  }
+  body:not(.timer-focus) #doseContent{
+    padding-bottom:24px;
+  }
+}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400,0..1,0" rel="stylesheet">
 </head>
