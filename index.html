@@ -331,6 +331,7 @@ $("doseContent").hidden=!open;
 $("doseToggle").classList.toggle("active",open);
 $("doseToggle").setAttribute("aria-expanded",String(open));
 $("doseToggle").setAttribute("aria-pressed",String(open));
+if(open){requestAnimationFrame(()=>{$("doseToggle").scrollIntoView({behavior:"smooth",block:"start"});});}
 });
 
 const circumference=2*Math.PI*105;
