@@ -312,7 +312,7 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 <button id="brewPlus" class="round" type="button" aria-label="Increase brewing time"><span class="material-symbols-outlined stepper-icon" aria-hidden="true">add</span></button>
 </div>
 </div>
-<button id="brewStart" class="primary brew-action" type="button">SHALL WE BREW?</button>
+<button id="brewStart" class="primary brew-action" type="button">BREW</button>
 <p id="brewMessage" class="hint" role="status"></p>
 </div>
 </section>
@@ -358,18 +358,6 @@ function playReply(which){
     console.warn("Tea reply playback failed:",which,err);
   });
 }
-const clockAudio=new Audio("./clock.mp3");
-clockAudio.loop=true;
-clockAudio.preload="auto";
-function startClockAudio(){
-  clockAudio.muted=false;
-  clockAudio.volume=1;
-  if(clockAudio.paused)clockAudio.play().catch(err=>console.warn("Clock audio unavailable:",err));
-}
-function stopClockAudio(){
-  clockAudio.pause();
-  try{clockAudio.currentTime=0;}catch(e){}
-}
 const voice=new Audio("./tea-finished.mp3");
 voice.preload="auto";
 let chosen=4,total=240,remaining=240,deadline=0,running=false,finished=false,ticker=null;
@@ -409,7 +397,7 @@ function releaseWakeLock(){
 if(wakeLock){const lock=wakeLock;wakeLock=null;lock.release().catch(()=>{});}
 }
 function clearTicker(){if(ticker!==null){clearInterval(ticker);ticker=null;}}
-function stop(){clearTicker();running=false;stopClockAudio();releaseWakeLock();}
+function stop(){clearTicker();running=false;releaseWakeLock();}
 function setTime(min){
 stop();warnedThirty=false;chosen=Math.max(1,Math.min(60,min));total=remaining=chosen*60;finished=false;
 $("message").textContent="";
@@ -447,7 +435,7 @@ $("start").addEventListener("click",()=>{
 if(running){tick();if(!running)return;stop();$("message").textContent="";draw();return;}
 if(finished){remaining=total;finished=false;warnedThirty=false;}
 playReply("offer");
-startClockAudio();
+
 unlockVoice();
 running=true;deadline=Date.now()+remaining*1000;
 $("message").textContent="";
@@ -525,7 +513,7 @@ if(tea.provisional)$("doseHint").textContent+=" Approximate amount — check the
 $("brewMinutes").textContent=brewMin+" MIN";
 if(selectedTea==="free"&&$("freeMin").value)$("freeMin").value=brewMin;
 $("brewMinus").disabled=brewMin<=1;$("brewPlus").disabled=brewMin>=60;
-$("brewStart").textContent="SHALL WE BREW?";
+$("brewStart").textContent="BREW";
 $("brewStart").disabled=!valid;
 
 }
