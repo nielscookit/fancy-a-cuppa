@@ -424,7 +424,9 @@ body.timer-focus .timer .clock{
     margin-top:12px;
     scroll-margin-top:calc(24px + env(safe-area-inset-top, 0px));
   }
-  body:not(.timer-focus) #doseContent{
+  body:not(.timer-focus) #doseContent:not([hidden]){
+    /* Guarantee enough scroll range even before any tea details expand. */
+    min-height:calc(100dvh - 24px - env(safe-area-inset-top, 0px));
     padding-bottom:24px;
   }
 }
