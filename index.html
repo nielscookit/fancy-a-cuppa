@@ -359,12 +359,47 @@ function playReply(which){
     console.warn("Tea reply playback failed:",which,err);
   });
 }
-const clickSound=new Audio("./click2.mp3");
-clickSound.preload="auto";
+// Decode the short UI sound once; Web Audio supports low-latency overlapping taps.
+let clickContext=null;
+let clickBuffer=null;
+let clickFallback=null;
+function initClickAudio(){
+  const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+  if(!AudioContextClass){
+    clickFallback=new Audio("./click2.mp3");
+    clickFallback.preload="auto";
+    return;
+  }
+  try{
+    clickContext=new AudioContextClass();
+    fetch("./click2.mp3").then(response=>{
+      if(!response.ok)throw new Error("Click sound HTTP "+response.status);
+      return response.arrayBuffer();
+    }).then(data=>clickContext.decodeAudioData(data)).then(buffer=>{clickBuffer=buffer;})
+      .catch(err=>console.warn("Click sound could not be decoded:",err));
+  }catch(err){
+    console.warn("Web Audio unavailable:",err);
+    clickFallback=new Audio("./click2.mp3");
+    clickFallback.preload="auto";
+  }
+}
+initClickAudio();
 function playClick(){
-  clickSound.pause();
-  try{clickSound.currentTime=0;}catch(e){}
-  clickSound.play().catch(err=>console.warn("Click feedback unavailable:",err));
+  if(clickContext&&clickBuffer){
+    if(clickContext.state!=="running")clickContext.resume().catch(()=>{});
+    const source=clickContext.createBufferSource();
+    source.buffer=clickBuffer;
+    source.connect(clickContext.destination);
+    source.start(0);
+    return;
+  }
+  if(!clickFallback){
+    clickFallback=new Audio("./click2.mp3");
+    clickFallback.preload="auto";
+  }
+  clickFallback.pause();
+  try{clickFallback.currentTime=0;}catch(e){}
+  clickFallback.play().catch(()=>{});
 }
 const voice=new Audio("./tea-finished.mp3");
 voice.preload="auto";
