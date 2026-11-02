@@ -562,8 +562,11 @@ $("doseToggle").addEventListener("click",()=>{
     toggle.classList.remove("active");
     toggle.setAttribute("aria-expanded","false");
     toggle.setAttribute("aria-pressed","false");
+    // Hide content on press while keeping its layout height until scrolling ends.
+    content.style.visibility="hidden";
     animateDoseScroll(0,()=>{
       content.hidden=true;
+      content.style.visibility="";
     });
   }
 });
