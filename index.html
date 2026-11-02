@@ -467,7 +467,18 @@ function videoSync(){
   if(Math.abs(steepVideo.currentTime-target)>0.12)try{steepVideo.currentTime=target;}catch(e){}
  }
 }
-fillVideo.addEventListener("loadedmetadata",()=>{if(Number.isFinite(fillVideo.duration)&&fillVideo.duration>0)fillDuration=fillVideo.duration;});
+function syncFillSpeed(){
+ const audioDuration=replies.offer.duration;
+ const videoDuration=fillVideo.duration;
+ if(Number.isFinite(audioDuration)&&audioDuration>0&&Number.isFinite(videoDuration)&&videoDuration>0){
+   fillDuration=videoDuration;
+   // Stretch the visual filling sequence to the length of the existing pouring sound.
+   fillVideo.playbackRate=Math.max(0.25,Math.min(4,videoDuration/audioDuration));
+ }
+}
+fillVideo.addEventListener("loadedmetadata",()=>{if(Number.isFinite(fillVideo.duration)&&fillVideo.duration>0)fillDuration=fillVideo.duration;syncFillSpeed();});
+replies.offer.addEventListener("loadedmetadata",syncFillSpeed);
+replies.offer.addEventListener("durationchange",syncFillSpeed);
 fillVideo.addEventListener("ended",()=>{fillCompleted=true;fillElapsed=fillDuration;videoSync();});
 fillVideo.addEventListener("error",()=>console.warn("Please upload fill_app.mp4 to the repository root"));
 steepVideo.addEventListener("error",()=>console.warn("Please upload steam_app.mp4 to the repository root"));
@@ -551,7 +562,7 @@ if(clickContext&&clickContext.state!=="running")clickContext.resume().catch(()=>
 if(replies.almost.readyState===0)replies.almost.load();
 unlockVoice();
 running=true;deadline=Date.now()+remaining*1000;
-if(!fillCompleted){fillStartedAt=Date.now();try{fillVideo.currentTime=Math.min(fillElapsed,Math.max(0,fillDuration-0.05));}catch(e){}}
+if(!fillCompleted){syncFillSpeed();fillStartedAt=Date.now();try{fillVideo.currentTime=Math.min(fillElapsed,Math.max(0,fillDuration-0.05));}catch(e){}}
 videoSync();
 $("message").textContent="";
 tick();ticker=setInterval(()=>{tick();if(running&&fillCompleted)videoSync();},200);requestWakeLock();
