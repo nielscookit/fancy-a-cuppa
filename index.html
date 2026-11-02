@@ -346,13 +346,21 @@ function playReply(which){
   const audio=replies[which];
   if(!audio)return;
   if(currentReply&&currentReply!==audio){currentReply.pause();currentReply.currentTime=0;}
-  audio.pause();audio.currentTime=0;
+  audio.pause();
+  try{audio.currentTime=0;}catch(e){}
+  audio.muted=false;
+  audio.volume=1;
   currentReply=audio;
-  audio.play().catch(()=>{});
+  audio.play().catch(err=>{
+    const target=which==="brew"?$("brewMessage"):$("message");
+    target.textContent="Audio couldn't play. Tap again or check your device's sound settings.";
+    console.warn("Tea reply playback failed:",which,err);
+  });
 }
 const voice=new Audio("./tea-finished.mp3");
 voice.preload="auto";
 let chosen=4,total=240,remaining=240,deadline=0,running=false,finished=false,ticker=null;
+let skipOfferReply=false;
 function clock(sec){
 const n=Math.max(0,Math.ceil(sec));
 return String(Math.floor(n/60)).padStart(2,"0")+":"+String(n%60).padStart(2,"0");
@@ -418,7 +426,7 @@ return;
 draw();
 }
 $("start").addEventListener("click",()=>{
-if(!running&&remaining===total&&!finished)playReply("offer");
+if(!running&&remaining===total&&!finished&&!skipOfferReply)playReply("offer");
 if(running){tick();if(!running)return;stop();$("message").textContent="";draw();return;}
 if(finished){remaining=total;finished=false;}
 unlockVoice();
@@ -529,7 +537,8 @@ $("brewStart").addEventListener("click",()=>{
 if($("brewStart").disabled)return;
 playReply("brew");
 setTime(brewMin);
-$("start").click();
+skipOfferReply=true;
+try{$("start").click();}finally{skipOfferReply=false;}
 window.scrollTo({top:0,behavior:"smooth"});
 });
 $("saveTea").addEventListener("click",()=>{
