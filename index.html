@@ -328,6 +328,15 @@ body.timer-focus .timer .clock{font-size:clamp(42px,11vw,58px)}
 /* 24px vertical separation around the water-volume grid. */
 #teaDetails .volumes{margin-top:24px;margin-bottom:24px}
 #teaDetails .result{margin-top:0}
+
+/* Spacing system: 24px within control groups, 48px between functional groups.
+   Preserve the existing minute stepper geometry and the top timer group. */
+#doseContent .scan-choices{gap:24px}
+#doseContent .volumes{column-gap:24px;row-gap:24px}
+#doseContent .tea-picker{margin-top:24px;margin-bottom:0}
+#teaDetails .volumes{margin-top:48px;margin-bottom:48px}
+#teaDetails .result{margin-top:0}
+#doseContent .divider{margin:24px 0}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400,0..1,0" rel="stylesheet">
 </head>
