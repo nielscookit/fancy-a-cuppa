@@ -336,7 +336,8 @@ $("doseToggle").setAttribute("aria-pressed",String(open));
 const circumference=2*Math.PI*105;
 $("progress").style.strokeDasharray=String(circumference);
 const replies={
-  offer:new Audio("./go-on-then.mp3"),
+  offer:new Audio("./Brew.mp3"),
+  almost:new Audio("./AlmostTime.mp3"),
   preference:new Audio("./lets-see.mp3"),
   brew:new Audio("./lovely.mp3")
 };
@@ -357,10 +358,22 @@ function playReply(which){
     console.warn("Tea reply playback failed:",which,err);
   });
 }
+const clockAudio=new Audio("./clock.mp3");
+clockAudio.loop=true;
+clockAudio.preload="auto";
+function startClockAudio(){
+  clockAudio.muted=false;
+  clockAudio.volume=1;
+  if(clockAudio.paused)clockAudio.play().catch(err=>console.warn("Clock audio unavailable:",err));
+}
+function stopClockAudio(){
+  clockAudio.pause();
+  try{clockAudio.currentTime=0;}catch(e){}
+}
 const voice=new Audio("./tea-finished.mp3");
 voice.preload="auto";
 let chosen=4,total=240,remaining=240,deadline=0,running=false,finished=false,ticker=null;
-let skipOfferReply=false;
+let warnedThirty=false;
 function clock(sec){
 const n=Math.max(0,Math.ceil(sec));
 return String(Math.floor(n/60)).padStart(2,"0")+":"+String(n%60).padStart(2,"0");
@@ -396,9 +409,9 @@ function releaseWakeLock(){
 if(wakeLock){const lock=wakeLock;wakeLock=null;lock.release().catch(()=>{});}
 }
 function clearTicker(){if(ticker!==null){clearInterval(ticker);ticker=null;}}
-function stop(){clearTicker();running=false;releaseWakeLock();}
+function stop(){clearTicker();running=false;stopClockAudio();releaseWakeLock();}
 function setTime(min){
-stop();chosen=Math.max(1,Math.min(60,min));total=remaining=chosen*60;finished=false;
+stop();warnedThirty=false;chosen=Math.max(1,Math.min(60,min));total=remaining=chosen*60;finished=false;
 $("message").textContent="";
 draw();
 }
@@ -423,12 +436,18 @@ draw();
 playVoice().catch(()=>{});
 return;
 }
+if(!warnedThirty&&remaining<=30){
+warnedThirty=true;
+playReply("almost");
+}
 draw();
 }
 $("start").addEventListener("click",()=>{
-if(!running&&remaining===total&&!finished&&!skipOfferReply)playReply("offer");
+
 if(running){tick();if(!running)return;stop();$("message").textContent="";draw();return;}
-if(finished){remaining=total;finished=false;}
+if(finished){remaining=total;finished=false;warnedThirty=false;}
+playReply("offer");
+startClockAudio();
 unlockVoice();
 running=true;deadline=Date.now()+remaining*1000;
 $("message").textContent="";
@@ -535,10 +554,8 @@ $("freeMin").addEventListener("input",()=>{const n=Number($("freeMin").value);if
 $("freeDose").addEventListener("input",renderDose);
 $("brewStart").addEventListener("click",()=>{
 if($("brewStart").disabled)return;
-playReply("brew");
 setTime(brewMin);
-skipOfferReply=true;
-try{$("start").click();}finally{skipOfferReply=false;}
+$("start").click();
 window.scrollTo({top:0,behavior:"smooth"});
 });
 $("saveTea").addEventListener("click",()=>{
