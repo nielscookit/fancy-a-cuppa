@@ -359,6 +359,24 @@ function playReply(which){
     console.warn("Tea reply playback failed:",which,err);
   });
 }
+// Use the already user-unlocked Web Audio context for the automatic 30-second cue.
+let almostBuffer=null;
+let almostPending=false;
+function playAlmost(){
+  if(clickContext&&almostBuffer){
+    const start=()=>{
+      const source=clickContext.createBufferSource();
+      source.buffer=almostBuffer;
+      source.connect(clickContext.destination);
+      source.start();
+    };
+    if(clickContext.state==="running")start();
+    else clickContext.resume().then(start).catch(err=>console.warn("30-second cue blocked:",err));
+  }else{
+    almostPending=true;
+    replies.almost.play().catch(err=>console.warn("30-second cue blocked:",err));
+  }
+}
 // Decode the short UI sound once; Web Audio supports low-latency overlapping taps.
 let clickContext=null;
 let clickBuffer=null;
@@ -384,6 +402,14 @@ function initClickAudio(){
   }
 }
 initClickAudio();
+if(clickContext){
+  fetch("./AlmostTime.mp3").then(response=>{
+    if(!response.ok)throw new Error("30-second audio HTTP "+response.status);
+    return response.arrayBuffer();
+  }).then(data=>clickContext.decodeAudioData(data))
+    .then(buffer=>{almostBuffer=buffer;})
+    .catch(err=>console.warn("30-second audio decoding failed:",err));
+}
 function playClick(){
   if(clickContext&&clickBuffer){
     if(clickContext.state!=="running")clickContext.resume().catch(()=>{});
@@ -476,7 +502,7 @@ return;
 }
 if(!warnedThirty&&remaining<=30){
 warnedThirty=true;
-playReply("almost");
+playAlmost();
 }
 draw();
 }
@@ -485,7 +511,8 @@ $("start").addEventListener("click",()=>{
 if(running){tick();if(!running)return;stop();$("message").textContent="";draw();return;}
 if(finished){remaining=total;finished=false;warnedThirty=false;}
 playReply("offer");
-
+if(clickContext&&clickContext.state!=="running")clickContext.resume().catch(()=>{});
+if(replies.almost.readyState===0)replies.almost.load();
 unlockVoice();
 running=true;deadline=Date.now()+remaining*1000;
 $("message").textContent="";
