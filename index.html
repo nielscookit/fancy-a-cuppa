@@ -398,6 +398,11 @@ body.timer-focus .timer .clock{
   overflow:visible;
   color:#908C36;
 }
+
+/* Exploration: larger cup and soft-edged video blending. */
+body.timer-focus .timer .tea-visual{width:min(390px,100%);-webkit-mask-image:radial-gradient(ellipse 60% 60% at center,#000 65%,transparent 100%);mask-image:radial-gradient(ellipse 60% 60% at center,#000 65%,transparent 100%)}
+body.timer-focus .timer .tea-visual video{transform:scale(1.30);transform-origin:center}
+body.timer-focus .timer .dial{width:min(420px,calc(100vw - 16px),calc(100dvh - 150px))}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400,0..1,0" rel="stylesheet">
 </head>
