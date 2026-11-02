@@ -245,6 +245,12 @@ body.timer-focus .timer .actions{width:100%;max-width:360px}
 body:not(.timer-focus) .timer .dial{display:none}
 body.timer-focus .timer .dial{display:flex;align-items:center;justify-content:center}
 body.timer-focus .timer .center{position:static}
+body.timer-focus .timer .dial{flex-direction:column;gap:12px;width:min(360px,calc(100vw - 40px),calc(100dvh - 180px));height:auto;aspect-ratio:auto}
+body.timer-focus .timer .tea-visual{display:block;width:min(330px,100%);aspect-ratio:1;position:relative;overflow:hidden}
+.tea-visual{display:none}
+.tea-visual video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.tea-visual video[hidden]{display:none!important}
+body.timer-focus .timer .clock{font-size:clamp(42px,11vw,58px)}
 .timer > .stepper{margin:28px 0 24px;gap:18px}
 .timer > .stepper .round{width:72px;height:72px;min-width:72px;border-radius:50%}
 .timer > .stepper .minute-label{min-width:104px}
@@ -255,6 +261,7 @@ body.timer-focus .timer .center{position:static}
 <main>
 <section class="timer" aria-label="Tea timer">
 <div class="dial">
+<div class="tea-visual" aria-hidden="true"><video id="fillVideo" preload="auto" muted playsinline src="./fill_app.mp4"></video><video id="steepVideo" preload="auto" muted playsinline src="./steam_app.mp4" hidden></video></div>
 <div class="center">
 <div id="clock" class="clock" role="timer" aria-label="Time remaining">02:00</div>
 
@@ -439,6 +446,24 @@ const voice=new Audio("./tea-finished.mp3");
 voice.preload="auto";
 let chosen=2,total=120,remaining=120,deadline=0,running=false,finished=false,ticker=null;
 let warnedThirty=false;
+const fillVideo=$("fillVideo"),steepVideo=$("steepVideo");
+let fillCompleted=false,fillElapsed=0,fillDuration=5.08,fillStartedAt=0;
+function videoPause(){fillVideo.pause();steepVideo.pause();}
+function videoReset(){videoPause();fillCompleted=false;fillElapsed=0;fillStartedAt=0;try{fillVideo.currentTime=0;steepVideo.currentTime=0;}catch(e){}fillVideo.hidden=false;steepVideo.hidden=true;}
+function videoSync(){
+ if(!running){videoPause();return;}
+ if(!fillCompleted){fillVideo.hidden=false;steepVideo.hidden=true;if(fillVideo.paused)fillVideo.play().catch(()=>{});return;}
+ fillVideo.pause();fillVideo.hidden=true;steepVideo.hidden=false;
+ const d=steepVideo.duration;
+ if(Number.isFinite(d)&&d>0){
+  const target=Math.min(d-0.04,Math.max(0,(total-remaining)/total)*d);
+  if(Math.abs(steepVideo.currentTime-target)>0.12)try{steepVideo.currentTime=target;}catch(e){}
+ }
+}
+fillVideo.addEventListener("loadedmetadata",()=>{if(Number.isFinite(fillVideo.duration)&&fillVideo.duration>0)fillDuration=fillVideo.duration;});
+fillVideo.addEventListener("ended",()=>{fillCompleted=true;fillElapsed=fillDuration;videoSync();});
+fillVideo.addEventListener("error",()=>console.warn("Please upload fill_app.mp4 to the repository root"));
+steepVideo.addEventListener("error",()=>console.warn("Please upload steam_app.mp4 to the repository root"));
 function clock(sec){
 const n=Math.max(0,Math.ceil(sec));
 return String(Math.floor(n/60)).padStart(2,"0")+":"+String(n%60).padStart(2,"0");
@@ -476,9 +501,10 @@ function stop(){
   brewAudio.pause();
   try{brewAudio.currentTime=0;}catch(e){}
   releaseWakeLock();
+  videoPause();
 }
 function setTime(min){
-stop();warnedThirty=false;chosen=Math.max(1,Math.min(60,min));total=remaining=chosen*60;finished=false;
+stop();videoReset();warnedThirty=false;chosen=Math.max(1,Math.min(60,min));total=remaining=chosen*60;finished=false;
 $("message").textContent="";
 draw();
 }
@@ -497,7 +523,7 @@ function tick(){
 if(!running)return;
 remaining=Math.max(0,(deadline-Date.now())/1000);
 if(remaining<=0){
-stop();remaining=0;finished=true;
+stop();fillCompleted=true;fillVideo.hidden=true;steepVideo.hidden=false;if(Number.isFinite(steepVideo.duration)&&steepVideo.duration>0)try{steepVideo.currentTime=Math.max(0,steepVideo.duration-0.04);}catch(e){}remaining=0;finished=true;
 $("message").textContent="";
 draw();
 playVoice().catch(()=>{});
@@ -511,15 +537,17 @@ draw();
 }
 $("start").addEventListener("click",()=>{
 
-if(running){tick();if(!running)return;stop();$("message").textContent="";draw();return;}
-if(finished){remaining=total;finished=false;warnedThirty=false;}
+if(running){tick();if(!running)return;if(!fillCompleted)fillElapsed=Math.min(fillDuration,fillElapsed+(Date.now()-fillStartedAt)/1000);stop();$("message").textContent="";draw();return;}
+if(finished){remaining=total;finished=false;warnedThirty=false;videoReset();}
 playReply("offer");
 if(clickContext&&clickContext.state!=="running")clickContext.resume().catch(()=>{});
 if(replies.almost.readyState===0)replies.almost.load();
 unlockVoice();
 running=true;deadline=Date.now()+remaining*1000;
+if(!fillCompleted){fillStartedAt=Date.now();try{fillVideo.currentTime=Math.min(fillElapsed,Math.max(0,fillDuration-0.05));}catch(e){}}
+videoSync();
 $("message").textContent="";
-tick();ticker=setInterval(tick,200);requestWakeLock();
+tick();ticker=setInterval(()=>{tick();if(running&&fillCompleted)videoSync();},200);requestWakeLock();
 });
 $("reset").addEventListener("click",reset);
 $("minus").addEventListener("click",()=>{playClick();setTime(chosen-1);});
