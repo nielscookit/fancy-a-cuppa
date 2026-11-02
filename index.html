@@ -639,7 +639,7 @@ const timerActive=running||remaining<total||finished;
 syncTimerFocus(timerActive);
 const start=$("start");
 if(timerActive){
-const icon=document.createElement("span");icon.className="material-symbols-outlined timer-action-icon timer-play-pause-icon";icon.setAttribute("aria-hidden","true");icon.textContent=running?"pause":"play_arrow";start.replaceChildren(icon);
+const icon=document.createElement("span");icon.className="material-symbols-outlined timer-action-icon timer-play-pause-icon";icon.setAttribute("aria-hidden","true");icon.textContent=running?"pause":finished?"replay":"play_arrow";start.replaceChildren(icon);
 start.setAttribute("aria-label",running?"Pause":finished?"Restart":"Resume");
 }else{start.textContent="FANCY A CUPPA?";start.setAttribute("aria-label","Start timer");}
 start.classList.toggle("timer-icon-action",timerActive);
