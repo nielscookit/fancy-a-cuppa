@@ -258,7 +258,7 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 <button type="button" class="preset" data-min="5" aria-label="5 minutes">5</button>
 </div>
 <div class="actions">
-<button id="start" type="button" class="primary">FANCY A CUPPA</button>
+<button id="start" type="button" class="primary">FANCY A CUPPA?</button>
 <button id="reset" type="button" class="secondary" hidden aria-label="Reset"><span class="material-symbols-outlined timer-action-icon" aria-hidden="true">restart_alt</span></button>
 </div>
 <p id="message" class="message" role="status" aria-live="polite"></p>
@@ -312,7 +312,7 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 <button id="brewPlus" class="round" type="button" aria-label="Increase brewing time"><span class="material-symbols-outlined stepper-icon" aria-hidden="true">add</span></button>
 </div>
 </div>
-<button id="brewStart" class="primary brew-action" type="button">GO ON THEN</button>
+<button id="brewStart" class="primary brew-action" type="button">SHALL WE BREW?</button>
 <p id="brewMessage" class="hint" role="status"></p>
 </div>
 </section>
@@ -357,7 +357,7 @@ const start=$("start");
 if(timerActive){
 const icon=document.createElement("span");icon.className="material-symbols-outlined timer-action-icon timer-play-pause-icon";icon.setAttribute("aria-hidden","true");icon.textContent=running?"pause":"play_arrow";start.replaceChildren(icon);
 start.setAttribute("aria-label",running?"Pause":finished?"Restart":"Resume");
-}else{start.textContent="FANCY A CUPPA";start.setAttribute("aria-label","Start timer");}
+}else{start.textContent="FANCY A CUPPA?";start.setAttribute("aria-label","Start timer");}
 start.classList.toggle("timer-icon-action",timerActive);
 $("reset").classList.toggle("timer-icon-action",timerActive);
 $("reset").hidden=!(running||remaining<total||finished);
@@ -481,7 +481,7 @@ if(tea.provisional)$("doseHint").textContent+=" Approximate amount — check the
 $("brewMinutes").textContent=brewMin+" MIN";
 if(selectedTea==="free"&&$("freeMin").value)$("freeMin").value=brewMin;
 $("brewMinus").disabled=brewMin<=1;$("brewPlus").disabled=brewMin>=60;
-$("brewStart").textContent="GO ON THEN";
+$("brewStart").textContent="SHALL WE BREW?";
 $("brewStart").disabled=!valid;
 
 }
