@@ -250,6 +250,10 @@ body.timer-focus .timer .tea-visual{display:block;width:min(330px,100%);aspect-r
 .tea-visual{display:none}
 .tea-visual video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .tea-visual video[hidden]{display:none!important}
+.tea-visual{background:#faf9f6;isolation:isolate;-webkit-mask-image:radial-gradient(ellipse 70% 70% at center,#000 67%,transparent 100%);mask-image:radial-gradient(ellipse 70% 70% at center,#000 67%,transparent 100%)}
+.tea-visual video{background:#faf9f6}
+.tea-visual video#steepVideo{opacity:0;transition:opacity .55s ease}
+.tea-visual video#steepVideo.visible{opacity:1}
 body.timer-focus .timer .clock{font-size:clamp(42px,11vw,58px)}
 .timer > .stepper{margin:28px 0 24px;gap:18px}
 .timer > .stepper .round{width:72px;height:72px;min-width:72px;border-radius:50%}
@@ -268,7 +272,7 @@ body.timer-focus .timer .clock{font-size:clamp(42px,11vw,58px)}
 <main>
 <section class="timer" aria-label="Tea timer">
 <div class="dial">
-<div class="tea-visual" aria-hidden="true"><video id="fillVideo" preload="auto" muted playsinline src="./fill_app.mp4"></video><video id="steepVideo" preload="auto" muted playsinline src="./steam_app.mp4" hidden></video></div>
+<div class="tea-visual" aria-hidden="true"><video id="fillVideo" preload="auto" muted playsinline src="./fill_app.mp4"></video><video id="steepVideo" preload="auto" muted playsinline loop src="./steam_app.mp4" hidden></video></div>
 <div class="center">
 <div id="clock" class="clock" role="timer" aria-label="Time remaining">02:00</div>
 
@@ -456,16 +460,23 @@ let warnedThirty=false;
 const fillVideo=$("fillVideo"),steepVideo=$("steepVideo");
 let fillCompleted=false,fillElapsed=0,fillDuration=5.08,fillStartedAt=0;
 function videoPause(){fillVideo.pause();steepVideo.pause();}
-function videoReset(){videoPause();fillCompleted=false;fillElapsed=0;fillStartedAt=0;try{fillVideo.currentTime=0;steepVideo.currentTime=0;}catch(e){}fillVideo.hidden=false;steepVideo.hidden=true;}
+function videoReset(){
+ videoPause();fillCompleted=false;fillElapsed=0;fillStartedAt=0;
+ steepVideo.classList.remove("visible");
+ try{fillVideo.currentTime=0;steepVideo.currentTime=0;}catch(e){}
+ fillVideo.hidden=false;steepVideo.hidden=true;
+}
 function videoSync(){
  if(!running){videoPause();return;}
- if(!fillCompleted){fillVideo.hidden=false;steepVideo.hidden=true;if(fillVideo.paused)fillVideo.play().catch(()=>{});return;}
- fillVideo.pause();fillVideo.hidden=true;steepVideo.hidden=false;
- const d=steepVideo.duration;
- if(Number.isFinite(d)&&d>0){
-  const target=Math.min(d-0.04,Math.max(0,(total-remaining)/total)*d);
-  if(Math.abs(steepVideo.currentTime-target)>0.12)try{steepVideo.currentTime=target;}catch(e){}
+ if(!fillCompleted){
+  steepVideo.pause();steepVideo.classList.remove("visible");steepVideo.hidden=true;fillVideo.hidden=false;
+  if(fillVideo.paused)fillVideo.play().catch(err=>console.warn("Fill video:",err));
+  return;
  }
+ // The steeping video plays continuously, rather than seeking on every timer tick.
+ steepVideo.hidden=false;fillVideo.hidden=false;
+ if(steepVideo.paused)steepVideo.play().catch(err=>console.warn("Steeping video:",err));
+ requestAnimationFrame(()=>steepVideo.classList.add("visible"));
 }
 function syncFillSpeed(){
  const audioDuration=replies.offer.duration;
@@ -541,7 +552,7 @@ function tick(){
 if(!running)return;
 remaining=Math.max(0,(deadline-Date.now())/1000);
 if(remaining<=0){
-stop();fillCompleted=true;fillVideo.hidden=true;steepVideo.hidden=false;if(Number.isFinite(steepVideo.duration)&&steepVideo.duration>0)try{steepVideo.currentTime=Math.max(0,steepVideo.duration-0.04);}catch(e){}remaining=0;finished=true;
+stop();fillCompleted=true;steepVideo.hidden=false;steepVideo.classList.add("visible");remaining=0;finished=true;
 $("message").textContent="";
 draw();
 playVoice().catch(()=>{});
@@ -565,7 +576,7 @@ running=true;deadline=Date.now()+remaining*1000;
 if(!fillCompleted){syncFillSpeed();fillStartedAt=Date.now();try{fillVideo.currentTime=Math.min(fillElapsed,Math.max(0,fillDuration-0.05));}catch(e){}}
 videoSync();
 $("message").textContent="";
-tick();ticker=setInterval(()=>{tick();if(running&&fillCompleted)videoSync();},200);requestWakeLock();
+tick();ticker=setInterval(tick,200);requestWakeLock();
 });
 $("reset").addEventListener("click",reset);
 $("minus").addEventListener("click",()=>{playClick();setTime(chosen-1);});
