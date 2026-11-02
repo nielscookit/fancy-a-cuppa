@@ -558,12 +558,12 @@ $("doseToggle").addEventListener("click",()=>{
       animateDoseScroll(target);
     });
   }else{
-    // Preserve the expanded content until the entire reverse animation completes.
+    // Update the button immediately; retain content height until the return scroll ends.
+    toggle.classList.remove("active");
+    toggle.setAttribute("aria-expanded","false");
+    toggle.setAttribute("aria-pressed","false");
     animateDoseScroll(0,()=>{
       content.hidden=true;
-      toggle.classList.remove("active");
-      toggle.setAttribute("aria-expanded","false");
-      toggle.setAttribute("aria-pressed","false");
     });
   }
 });
