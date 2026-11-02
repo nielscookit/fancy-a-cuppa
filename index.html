@@ -325,6 +325,7 @@ button,.scan-choices .scan-action{font-size:16px!important;font-weight:600!impor
 "use strict";
 const $=id=>document.getElementById(id);
 $("doseToggle").addEventListener("click",()=>{
+playReply("preference");
 const open=$("doseContent").hidden;
 $("doseContent").hidden=!open;
 $("doseToggle").classList.toggle("active",open);
@@ -334,6 +335,21 @@ $("doseToggle").setAttribute("aria-pressed",String(open));
 
 const circumference=2*Math.PI*105;
 $("progress").style.strokeDasharray=String(circumference);
+const replies={
+  offer:new Audio("./go-on-then.mp3"),
+  preference:new Audio("./lets-see.mp3"),
+  brew:new Audio("./lovely.mp3")
+};
+Object.values(replies).forEach(audio=>{audio.preload="auto";});
+let currentReply=null;
+function playReply(which){
+  const audio=replies[which];
+  if(!audio)return;
+  if(currentReply&&currentReply!==audio){currentReply.pause();currentReply.currentTime=0;}
+  audio.pause();audio.currentTime=0;
+  currentReply=audio;
+  audio.play().catch(()=>{});
+}
 const voice=new Audio("./tea-finished.mp3");
 voice.preload="auto";
 let chosen=4,total=240,remaining=240,deadline=0,running=false,finished=false,ticker=null;
@@ -402,6 +418,7 @@ return;
 draw();
 }
 $("start").addEventListener("click",()=>{
+if(!running&&remaining===total&&!finished)playReply("offer");
 if(running){tick();if(!running)return;stop();$("message").textContent="";draw();return;}
 if(finished){remaining=total;finished=false;}
 unlockVoice();
@@ -510,6 +527,7 @@ $("freeMin").addEventListener("input",()=>{const n=Number($("freeMin").value);if
 $("freeDose").addEventListener("input",renderDose);
 $("brewStart").addEventListener("click",()=>{
 if($("brewStart").disabled)return;
+playReply("brew");
 setTime(brewMin);
 $("start").click();
 window.scrollTo({top:0,behavior:"smooth"});
