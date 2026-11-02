@@ -430,6 +430,9 @@ body.timer-focus .timer .clock{
     padding-bottom:24px;
   }
 }
+
+/* Avoid Safari scroll anchoring fighting the animated panel navigation. */
+body:not(.timer-focus) main{overflow-anchor:none}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400,0..1,0" rel="stylesheet">
 </head>
@@ -518,36 +521,51 @@ const $=id=>document.getElementById(id);
 const focusExperiment=new URLSearchParams(location.search).get("classic")!=="1";
 function syncTimerFocus(active){document.body.classList.toggle("timer-focus",focusExperiment&&active);}
 
-let doseCloseToken=0;
+let doseScrollAnimation=0;
+function animateDoseScroll(target,done){
+  const token=++doseScrollAnimation;
+  const start=window.scrollY;
+  const destination=Math.max(0,Math.min(target,document.documentElement.scrollHeight-window.innerHeight));
+  const duration=480;
+  const begin=performance.now();
+  const previousBehavior=document.documentElement.style.scrollBehavior;
+  document.documentElement.style.scrollBehavior="auto";
+  function frame(now){
+    if(token!==doseScrollAnimation){document.documentElement.style.scrollBehavior=previousBehavior;return;}
+    const progress=Math.min(1,(now-begin)/duration);
+    const eased=progress<.5?4*progress*progress*progress:1-Math.pow(-2*progress+2,3)/2;
+    window.scrollTo(0,start+(destination-start)*eased);
+    if(progress<1)requestAnimationFrame(frame);
+    else{
+      window.scrollTo(0,destination);
+      document.documentElement.style.scrollBehavior=previousBehavior;
+      if(done)done();
+    }
+  }
+  requestAnimationFrame(frame);
+}
 $("doseToggle").addEventListener("click",()=>{
-const toggle=$("doseToggle"),content=$("doseContent");
-const opening=content.hidden;
-const token=++doseCloseToken;
-if(opening){
-  content.hidden=false;
-  toggle.classList.add("active");
-  toggle.setAttribute("aria-expanded","true");
-  toggle.setAttribute("aria-pressed","true");
-  requestAnimationFrame(()=>{
-    if(token!==doseCloseToken)return;
-    const top=toggle.getBoundingClientRect().top+window.scrollY-24;
-    window.scrollTo({top:Math.max(0,top),behavior:"smooth"});
-  });
-}else{
-  // Keep the expanded page height until the return scroll has finished.
-  window.scrollTo({top:0,behavior:"smooth"});
-  const started=performance.now();
-  function finishClose(){
-    if(token!==doseCloseToken)return;
-    if(window.scrollY<=2 || performance.now()-started>1400){
+  const toggle=$("doseToggle"),content=$("doseContent");
+  const opening=content.hidden;
+  if(opening){
+    content.hidden=false;
+    toggle.classList.add("active");
+    toggle.setAttribute("aria-expanded","true");
+    toggle.setAttribute("aria-pressed","true");
+    requestAnimationFrame(()=>{
+      const viewportOffset=window.visualViewport?window.visualViewport.offsetTop:0;
+      const target=toggle.getBoundingClientRect().top+window.scrollY-viewportOffset-24;
+      animateDoseScroll(target);
+    });
+  }else{
+    // Preserve the expanded content until the entire reverse animation completes.
+    animateDoseScroll(0,()=>{
       content.hidden=true;
       toggle.classList.remove("active");
       toggle.setAttribute("aria-expanded","false");
       toggle.setAttribute("aria-pressed","false");
-    }else requestAnimationFrame(finishClose);
+    });
   }
-  requestAnimationFrame(finishClose);
-}
 });
 
 const replies={
