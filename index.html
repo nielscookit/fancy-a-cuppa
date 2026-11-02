@@ -254,6 +254,13 @@ body.timer-focus .timer .clock{font-size:clamp(42px,11vw,58px)}
 .timer > .stepper{margin:28px 0 24px;gap:18px}
 .timer > .stepper .round{width:72px;height:72px;min-width:72px;border-radius:50%}
 .timer > .stepper .minute-label{min-width:104px}
+/* Consistent, larger touch targets for both timer steppers. */
+.timer > .stepper .round,
+.brew-step .stepper .round{width:76px;height:76px;min-width:76px;min-height:76px;border-radius:50%}
+.timer > .stepper .stepper-icon,
+.brew-step .stepper .stepper-icon{width:32px;height:32px;font-size:32px!important;line-height:32px!important;font-variation-settings:'opsz' 32,'wght' 400,'GRAD' 0,'FILL' 0}
+.timer > .stepper{margin-bottom:40px}
+.brew-action{margin-top:30px}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400,0..1,0" rel="stylesheet">
 </head>
