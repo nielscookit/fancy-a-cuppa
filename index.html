@@ -835,9 +835,9 @@ playVoice().then(()=>{$("message").textContent="Playing the sound.";})
 });
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&running){tick();requestWakeLock();}});
 const builtins=[
-{id:"ctc",name:"Assam CTC Tinsukia · TeaGschwendner 109",type:"loose",dose:6,min:4,provisional:true},
-{id:"brahmaputra",name:"Assam Brahmaputra Malty · TeaGschwendner 125",type:"loose",dose:6,min:5,provisional:true},
-{id:"williamson",name:"Traditional Afternoon · Williamson",type:"loose",dose:6,min:4,provisional:true},
+{id:"ctc",name:"Assam CTC Tinsukia",type:"loose",dose:6,min:4,provisional:true},
+{id:"brahmaputra",name:"Assam Brahmaputra Malty",type:"loose",dose:6,min:5,provisional:true},
+{id:"williamson",name:"Williamson",type:"loose",dose:6,min:4,provisional:true},
 {id:"tetley",name:"Tetley",type:"bag",dose:4,min:3,provisional:true},
 {id:"pgtips",name:"PG Tips",type:"bag",dose:4,min:3,provisional:true}
 ];
