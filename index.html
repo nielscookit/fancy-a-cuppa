@@ -594,7 +594,7 @@ $("doseToggle").addEventListener("click",()=>{
     requestAnimationFrame(()=>{
       // Use the visible viewport top, not the layout viewport, on iOS Safari.
       const viewportOffset=window.visualViewport?window.visualViewport.offsetTop:0;
-      const target=toggle.getBoundingClientRect().top+window.scrollY-viewportOffset+6;
+      const target=toggle.getBoundingClientRect().top+window.scrollY-viewportOffset+3;
       animateDoseScroll(target);
     });
   }else{
