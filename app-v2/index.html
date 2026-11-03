@@ -1172,6 +1172,7 @@ $("scanSave").addEventListener("click",async()=>{
  finally{button.disabled=false;}
 });
 
+FancyForm.setup("free");FancyForm.setup("scan");
 renderTeas();renderVolumes();selectTea();updateScanUnits();
 if(window.FancyCloud)FancyCloud.list().then(rows=>{cloudTeas=rows.filter(t=>!saved.some(v=>v.name===t.name&&v.unit===t.unit));renderTeas();}).catch(e=>console.warn("Community teas unavailable",e));
 draw();
