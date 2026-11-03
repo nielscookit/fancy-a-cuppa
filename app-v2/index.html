@@ -932,6 +932,7 @@ const valid=Number.isFinite(ml)&&ml>=50&&ml<=5000&&Number.isFinite(tea.dose)&&te
 $("doseResult").textContent=!valid?"Check water quantity":tea.type==="bag"?format(Math.round(ml*tea.dose/100)/10)+" tea bags":format(Math.round(ml*tea.dose/100)/10)+(tea.unit==="g"?" g":tea.unit==="tsp"?" tsp":tea.unit==="measure"?" level tea measures":" tea bags");
 $("doseHint").textContent=!Number.isFinite(tea.dose)?"Enter the tea quantity and reference water volume.":tea.type==="bag"?"Based on "+format(tea.dose)+" tea bags per litre.":"Based on "+format(tea.dose)+(tea.unit==="g"?" g":tea.unit==="tsp"?" level teaspoons":" level tea measures")+" per litre.";
 if(tea.provisional)$("doseHint").textContent+=" Approximate amount — check the pack.";
+if(tea.temperature!=null)$("doseHint").textContent+=" Water temperature: "+tea.temperature+" °C.";
 $("brewMinutes").textContent=brewMin+" MIN";
 if(selectedTea==="free"&&$("freeMin").value)$("freeMin").value=brewMin;
 $("brewMinus").disabled=brewMin<=1;$("brewPlus").disabled=brewMin>=60;
