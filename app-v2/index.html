@@ -509,12 +509,18 @@ body:not(.timer-focus) main{overflow-anchor:none}
 <div id="scanCapture" hidden></div>
 <div id="scanReview" hidden>
 <p id="scanStatus" class="hint" role="status" hidden></p>
-<label><span class="field-label">Tea name (required)</span><input id="scanName" maxlength="80" placeholder="e.g. Assam ..."></label>
-<label><span class="field-label">Tea type</span><select id="scanType"><option value="loose">Loose tea</option><option value="bag">Tea bags</option></select></label>
-<label><span class="field-label">Tea quantity</span><input id="scanDose" type="number" min="0.1" max="1000" step="any" inputmode="decimal" placeholder="Check or enter a value"></label>
-<label><span class="field-label">Unit (as shown on the pack)</span><select id="scanUnit"><option value="">Choose a unit</option><option value="measure">TeaGschwendner tea measure</option><option value="tsp">Teaspoons</option><option value="g">Grams (g)</option><option value="bag">Tea bags</option></select></label>
-<label><span class="field-label">For water (ml)</span><input id="scanBase" type="number" min="50" max="5000" step="any" inputmode="numeric" placeholder="e.g. 250"></label>
-<label><span class="field-label">Brewing time (minutes)</span><input id="scanMin" type="number" min="1" max="60" step="1" inputmode="numeric" placeholder="Check or enter a value"></label>
+
+<label><span class="field-label">Tea name *</span><input id="scanName" maxlength="200" placeholder="e.g. Assam FBOP Second Flush"></label>
+<label><span class="field-label">Brand / manufacturer *</span><input id="scanBrand" maxlength="120" placeholder="e.g. TeeGschwendner"></label>
+<label><span class="field-label">Tea category *</span><select id="scanCategory"><option value="">Choose category</option><option value="black">Black tea</option><option value="green">Green tea</option><option value="white">White tea</option><option value="oolong">Oolong</option><option value="fruit">Fruit tea</option><option value="herbal">Herbal tea</option><option value="rooibos">Rooibos</option><option value="other">Other</option></select></label>
+<label><span class="field-label">Variety *</span><select id="scanSubcategory"><option value="">Choose variety</option></select></label>
+<label id="scanOtherWrap" hidden><span class="field-label">Specify variety *</span><input id="scanOther" maxlength="100" placeholder="Tea variety"></label>
+<label><span class="field-label">Format *</span><select id="scanType"><option value="loose">Loose tea</option><option value="bag">Tea bags</option></select></label>
+<label><span class="field-label">Tea quantity *</span><input id="scanDose" type="number" min="0.1" max="100" step="any" inputmode="decimal" placeholder="e.g. 6"></label>
+<label><span class="field-label">Unit *</span><select id="scanUnit"><option value="">Choose a unit</option><option value="measure">Level tea measure</option><option value="tsp">Level teaspoon</option><option value="g">Grams (g)</option><option value="bag">Tea bags</option></select></label>
+<label><span class="field-label">Reference water (ml) *</span><input id="scanBase" type="number" min="50" max="5000" step="1" inputmode="numeric" placeholder="e.g. 900"></label>
+<label><span class="field-label">Brewing time (minutes) *</span><input id="scanMin" type="number" min="0.5" max="30" step="0.5" inputmode="decimal" placeholder="e.g. 4"></label>
+<label><span class="field-label">Water temperature (°C), optional</span><input id="scanTemp" type="number" min="40" max="100" step="1" inputmode="numeric" placeholder="e.g. 95"></label>
 <p class="hint">Scanned values are suggestions. Check them against the pack. Different spoon sizes are not interchangeable.</p>
 <p id="scanRaw" hidden></p>
 <div class="scan-actions"><button id="scanBack" type="button" aria-label="Cancel" title="Cancel"><span class="material-symbols-outlined save-cancel-icon" aria-hidden="true">close</span></button><button id="scanSave" class="confirm" type="button" aria-label="Save" title="Save"><span class="material-symbols-outlined save-cancel-icon" aria-hidden="true">check</span></button></div>
@@ -523,15 +529,21 @@ body:not(.timer-focus) main{overflow-anchor:none}
 </div>
 <div class="tea-picker"><button id="teaTrigger" class="tea-trigger" type="button" aria-expanded="false" aria-controls="teaMenu"><span id="teaChosen">Choose your tea</span><span class="material-symbols-outlined tea-chevron" aria-hidden="true">keyboard_arrow_down</span></button><div id="teaMenu" class="tea-menu" hidden></div><select id="teaSelect" aria-label="Choose your tea" hidden></select></div>
 <div id="freeFields" class="free-fields" hidden>
-<label><span class="field-label">Tea name (required)</span><input id="freeName" maxlength="80" placeholder="e.g. Assam ..."></label>
-<label><span class="field-label">Tea type</span><select id="freeType"><option value="loose">Loose tea</option><option value="bag">Tea bags</option></select></label>
-<label><span class="field-label">Tea quantity</span><input id="freeDose" type="number" min="0.1" max="1000" step="any" inputmode="decimal" placeholder="Enter quantity"></label>
-<label><span class="field-label">Unit (as shown on the pack)</span><select id="freeUnit"><option value="">Choose a unit</option><option value="measure">TeaGschwendner tea measure</option><option value="tsp">Teaspoons</option><option value="g">Grams (g)</option><option value="bag">Tea bags</option></select></label>
-<label><span class="field-label">For water (ml)</span><input id="freeBase" type="number" min="50" max="5000" step="any" inputmode="numeric" placeholder="e.g. 250"></label>
-<label><span class="field-label">Brewing time (minutes)</span><input id="freeMin" type="number" min="1" max="60" step="1" inputmode="numeric" placeholder="e.g. 4"></label>
+
+<label><span class="field-label">Tea name *</span><input id="freeName" maxlength="200" placeholder="e.g. Assam FBOP Second Flush"></label>
+<label><span class="field-label">Brand / manufacturer *</span><input id="freeBrand" maxlength="120" placeholder="e.g. TeeGschwendner"></label>
+<label><span class="field-label">Tea category *</span><select id="freeCategory"><option value="">Choose category</option><option value="black">Black tea</option><option value="green">Green tea</option><option value="white">White tea</option><option value="oolong">Oolong</option><option value="fruit">Fruit tea</option><option value="herbal">Herbal tea</option><option value="rooibos">Rooibos</option><option value="other">Other</option></select></label>
+<label><span class="field-label">Variety *</span><select id="freeSubcategory"><option value="">Choose variety</option></select></label>
+<label id="freeOtherWrap" hidden><span class="field-label">Specify variety *</span><input id="freeOther" maxlength="100" placeholder="Tea variety"></label>
+<label><span class="field-label">Format *</span><select id="freeType"><option value="loose">Loose tea</option><option value="bag">Tea bags</option></select></label>
+<label><span class="field-label">Tea quantity *</span><input id="freeDose" type="number" min="0.1" max="100" step="any" inputmode="decimal" placeholder="e.g. 6"></label>
+<label><span class="field-label">Unit *</span><select id="freeUnit"><option value="">Choose a unit</option><option value="measure">Level tea measure</option><option value="tsp">Level teaspoon</option><option value="g">Grams (g)</option><option value="bag">Tea bags</option></select></label>
+<label><span class="field-label">Reference water (ml) *</span><input id="freeBase" type="number" min="50" max="5000" step="1" inputmode="numeric" placeholder="e.g. 900"></label>
+<label><span class="field-label">Brewing time (minutes) *</span><input id="freeMin" type="number" min="0.5" max="30" step="0.5" inputmode="decimal" placeholder="e.g. 4"></label>
+<label><span class="field-label">Water temperature (°C), optional</span><input id="freeTemp" type="number" min="40" max="100" step="1" inputmode="numeric" placeholder="e.g. 95"></label>
 <div class="scan-actions"><button id="freeCancel" type="button" aria-label="Cancel" title="Cancel"><span class="material-symbols-outlined save-cancel-icon" aria-hidden="true">close</span></button><button id="saveTea" type="button" class="scan primary" aria-label="Save tea" title="Save tea"><span class="material-symbols-outlined save-cancel-icon" aria-hidden="true">check</span></button></div><p id="freeFeedback" class="hint" role="status"></p>
 </div>
-<div id="teaDetails" hidden>
+<div id="teaDetails" hidden><div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button id="editTea" type="button" class="secondary" hidden>EDIT TEA</button></div>
 <div class="volumes" id="volumes" role="group" aria-label="Water quantity"></div>
 <label id="customWrap" hidden><span class="field-label" style="margin-top:12px">Custom water quantity (ml)</span><input id="customMl" type="number" min="50" max="5000" step="10" value="600" inputmode="numeric"></label>
 <div class="result">
@@ -556,6 +568,7 @@ body:not(.timer-focus) main{overflow-anchor:none}
 </main>
 <script src="./cloud.js"></script>
 <script src="./barcode.js"></script>
+<script src="./mvp-form.js"></script>
 <script>
 (()=>{
 "use strict";
