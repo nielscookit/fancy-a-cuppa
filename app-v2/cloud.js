@@ -18,7 +18,7 @@ type:unit==="bag"?"bag":"loose",unit,dose:qty*1000/Number(p.dose_water_ml),
 min:Math.max(1,Math.round(Number(p.brew_seconds)/60)),provisional:false}];
 });
 }
-async function save({name,type,qty,base,mins,unit}){
+async function save({name,type,qty,base,mins,unit,code=null}){
 if(unit==="measure")throw Error("Please select teaspoons or grams instead of the manufacturer tea measure.");
 if(!["tsp","g","bag"].includes(unit))throw Error("Please choose teaspoons, grams or tea bags.");
 if(mins>30)throw Error("Shared catalog supports brewing times up to 30 minutes.");
@@ -26,6 +26,7 @@ const bits=name.split(/\s+[·|–-]\s+/);
 const brand=bits.length>1?bits.shift().trim():"Unbekannt";
 const title=bits.length?bits.join(" · ").trim():name;
 const payload={brand,name:title,category:"other",leaf_style:type==="bag"?"bag":"other",
+code_type:code?.type||null,code_value:code?.value||null,
 brew_seconds:mins*60,dose_water_ml:base,
 dose_teaspoons:unit==="tsp"?qty:null,dose_grams:unit==="g"?qty:null,dose_bags:unit==="bag"?qty:null};
 const res=await fetch(root+"/functions/v1/community-tea",{method:"POST",
@@ -34,5 +35,22 @@ const result=await res.json().catch(()=>({}));
 if(!res.ok)throw Error(result.error||"Cloud saving failed ("+res.status+")");
 return result;
 }
-window.FancyCloud={list,save};
+async function lookup(code){
+if(!code?.type||!code?.value)return null;
+const url=root+"/rest/v1/tea_codes?select=tea_id,teas(id,brand,name,tea_preparations(dose_teaspoons,dose_grams,dose_bags,dose_water_ml,brew_seconds))&code_type=eq."+encodeURIComponent(code.type)+"&code_value=eq."+encodeURIComponent(code.value)+"&limit=1";
+const response=await fetch(url,{headers:{apikey:key}});
+if(!response.ok)throw Error("Catalog lookup unavailable ("+response.status+")");
+const data=await response.json();
+if(!data.length||!data[0].teas)return null;
+const t=data[0].teas;
+const p=Array.isArray(t.tea_preparations)?t.tea_preparations[0]:t.tea_preparations;
+if(!p)return null;
+const unit=p.dose_bags!=null?"bag":p.dose_teaspoons!=null?"tsp":p.dose_grams!=null?"g":null;
+if(!unit)return null;
+const qty=Number(unit==="bag"?p.dose_bags:unit==="tsp"?p.dose_teaspoons:p.dose_grams);
+return {id:"cloud-"+t.id,name:t.brand==="Unbekannt"?t.name:t.brand+" · "+t.name,
+type:unit==="bag"?"bag":"loose",unit,dose:qty*1000/Number(p.dose_water_ml),
+min:Math.max(1,Math.round(Number(p.brew_seconds)/60)),provisional:false};
+}
+window.FancyCloud={list,save,lookup};
 })();
