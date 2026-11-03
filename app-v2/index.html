@@ -474,6 +474,36 @@ body:not(.timer-focus) main{overflow-anchor:none}
 /* Space the custom water input from the dosage result card. */
 #teaDetails #customWrap:not([hidden]){display:block;margin-bottom:12px!important}
 #teaDetails #customWrap:not([hidden]) + .result{margin-top:0!important}
+
+/* MVP tea search and selection; built on existing spacing and palette. */
+.tea-search-header{display:flex;align-items:stretch;gap:8px;margin:10px 0 14px}
+.tea-search-field{display:flex;align-items:center;gap:9px;flex:1;min-width:0;border:1px solid #e0ddd8;border-radius:11px;background:#fff;padding:0 12px}
+.tea-search-field:focus-within{border-color:#792b40;outline:2px solid rgba(121,43,64,.1)}
+.tea-search-field .material-symbols-outlined{font-size:20px;color:#777}
+.tea-search-field input{border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;min-width:0;width:100%;font:inherit;padding:13px 0!important;border-radius:0!important}
+.tea-search-scan{flex:0 0 50px!important;display:flex;align-items:center;justify-content:center;border:1px solid #e0ddd8;border-radius:11px;background:#fff;cursor:pointer}
+.tea-search-mode{margin-bottom:10px}
+.tea-search-list-head{display:flex;align-items:center;justify-content:space-between;margin:4px 0 8px;font-size:11px;letter-spacing:.035em;font-weight:600}
+.tea-search-cancel{border:0;background:none;color:#792b40;font:inherit;cursor:pointer;padding:5px}
+.tea-search-results{display:flex;flex-direction:column;gap:3px;max-height:40vh;overflow-y:auto}
+.tea-result{display:block;width:100%;border:0;background:transparent;text-align:left;padding:11px 7px;border-radius:9px;font:inherit;cursor:pointer}
+.tea-result:focus-visible,.tea-result:active{background:#f3eeee;outline:1px solid #792b40}
+.tea-result-name{display:block;font-size:13px;font-weight:600}
+.tea-result-sub{display:block;font-size:11px;color:#777;margin-top:3px}
+.tea-search-empty{font-size:12px;color:#777;padding:15px 5px}
+.tea-add-action{display:flex;align-items:center;gap:8px;width:100%;padding:14px 7px;margin-top:7px;background:transparent;border:0;border-top:1px solid #e4e0da;font:inherit;font-size:12px;font-weight:600;text-align:left;cursor:pointer}
+.tea-add-action .material-symbols-outlined{font-size:19px}
+.tea-photo-fallback{display:flex;align-items:center;gap:8px;padding:8px 7px;color:#777;font-size:11px;cursor:pointer}
+.tea-photo-fallback .material-symbols-outlined{font-size:17px}
+.selected-tea-card{border:1px solid #e4e0da;border-radius:13px;background:#fff;padding:14px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:14px}
+.selected-tea-card-main{flex:1;min-width:0}
+.selected-tea-title{font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.selected-tea-brand{font-size:12px;margin-top:5px}
+.selected-tea-meta{font-size:11px;color:#777;margin-top:5px}
+.selected-tea-actions{display:flex;align-items:center;gap:5px}
+.tea-card-action{border:0;background:transparent;color:#792b40;font-size:11px;font-weight:600;padding:6px;cursor:pointer}
+.tea-card-remove .material-symbols-outlined{font-size:20px}
+#teaSearchHeader[hidden],#teaSearchMode[hidden],#teaDetails[hidden],#freeFields[hidden]{display:none!important}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400,0..1,0" rel="stylesheet">
 </head>
@@ -502,7 +532,16 @@ body:not(.timer-focus) main{overflow-anchor:none}
 <div id="doseContent" hidden>
 <div class="divider"></div>
 <section aria-label="Tea preparation">
-<div class="scan-choices"><button class="scan-action" id="liveScan" type="button" aria-label="Scan barcode with camera" title="Scan barcode with camera"><span class="material-symbols-outlined scan-choice-icon" aria-hidden="true">document_scanner</span></button><label class="scan-action" for="galleryFile" aria-label="Choose photo" title="Choose photo"><span class="material-symbols-outlined scan-choice-icon" aria-hidden="true">photo</span></label></div>
+<div id="teaSearchHeader" class="tea-search-header">
+ <label class="tea-search-field"><span class="material-symbols-outlined" aria-hidden="true">search</span><input id="teaSearch" type="search" placeholder="Search teas…" aria-label="Search teas" autocomplete="off" spellcheck="false"></label>
+ <button class="scan-action tea-search-scan" id="liveScan" type="button" aria-label="Scan barcode with camera" title="Scan barcode"><span class="material-symbols-outlined scan-choice-icon" aria-hidden="true">document_scanner</span></button>
+</div>
+<div id="teaSearchMode" class="tea-search-mode">
+ <div class="tea-search-list-head"><span id="teaListHeading">RECENTLY SEARCHED</span><button id="cancelTeaSearch" class="tea-search-cancel" type="button" hidden>Cancel</button></div>
+ <div id="teaSearchResults" class="tea-search-results" role="list"></div>
+ <button id="addTeaFromSearch" class="tea-add-action" type="button"><span class="material-symbols-outlined" aria-hidden="true">add</span> ADD NEW TEA</button>
+ <label class="tea-photo-fallback" for="galleryFile"><span class="material-symbols-outlined" aria-hidden="true">photo</span> Scan from photo</label>
+</div>
 <input class="scan-input" id="scanFile" type="file" accept="image/*" capture="environment">
 <input class="scan-input" id="galleryFile" type="file" accept="image/*">
 <div id="scanPanel" class="scan-panel" hidden>
@@ -545,7 +584,10 @@ body:not(.timer-focus) main{overflow-anchor:none}
 <label><span class="field-label">Water temperature (°C), optional</span><input id="freeTemp" type="number" min="40" max="100" step="1" inputmode="numeric" placeholder="e.g. 95"></label>
 <div class="scan-actions"><button id="freeCancel" type="button" aria-label="Cancel" title="Cancel"><span class="material-symbols-outlined save-cancel-icon" aria-hidden="true">close</span></button><button id="saveTea" type="button" class="scan primary" aria-label="Save tea" title="Save tea"><span class="material-symbols-outlined save-cancel-icon" aria-hidden="true">check</span></button></div><p id="freeFeedback" class="hint" role="status"></p>
 </div>
-<div id="teaDetails" hidden><div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button id="editTea" type="button" class="secondary" hidden>EDIT TEA</button></div>
+<div id="teaDetails" hidden><div id="selectedTeaCard" class="selected-tea-card">
+ <div class="selected-tea-card-main"><div id="selectedTeaTitle" class="selected-tea-title"></div><div id="selectedTeaBrand" class="selected-tea-brand"></div><div id="selectedTeaMeta" class="selected-tea-meta"></div></div>
+ <div class="selected-tea-actions"><button id="editTea" type="button" class="tea-card-action" hidden>EDIT</button><button id="removeTeaSelection" type="button" class="tea-card-action tea-card-remove" aria-label="Remove tea selection"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></div>
+ </div>
 <div class="volumes" id="volumes" role="group" aria-label="Water quantity"></div>
 <label id="customWrap" hidden><span class="field-label" style="margin-top:12px">Custom water quantity (ml)</span><input id="customMl" type="number" min="50" max="5000" step="10" value="600" inputmode="numeric"></label>
 <div class="result">
