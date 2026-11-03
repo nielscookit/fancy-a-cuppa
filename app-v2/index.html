@@ -1008,6 +1008,7 @@ let scanProductCode=null;
 async function acceptScan(file){
 if(!file)return;
 scanFile=file;
+$("scanFile").value="";$("galleryFile").value="";
 scanProductCode=null;
 $("scanPanel").hidden=false;
 syncCreationMode();
@@ -1112,7 +1113,25 @@ const m=best.match(/(?:assam|darjeeling|earl grey|ceylon|rooibos|sencha|matcha|o
 name=(m?m[0]:best).trim().replace(/\s+\d+\s*$/,"").slice(0,80);
 if(/brahmaputra/i.test(text)&&/assam/i.test(text))name="Assam Brahmaputra";
 }
-if(name)$("scanName").value=name;
+if(name){
+$("scanName").value=name;
+const rules=[
+ [/\\b(assam|darjeeling|ceylon|earl grey|english breakfast)\\b/i,"black"],
+ [/\\b(sencha|bancha|gunpowder|gyokuro|matcha)\\b/i,"green"],
+ [/\\b(silver needle|bai mu dan|shou mei)\\b/i,"white"],
+ [/\\b(oolong)\\b/i,"oolong"],
+ [/\\b(rooibos)\\b/i,"rooibos"]
+];
+for(const [re,category] of rules){
+ const match=name.match(re);
+ if(!match)continue;
+ $("scanCategory").value=category;
+ $("scanCategory").dispatchEvent(new Event("change"));
+ const option=[...$("scanSubcategory").options].find(o=>o.textContent.toLowerCase()===match[1].toLowerCase());
+ if(option)$("scanSubcategory").value=option.value;
+ break;
+}
+}
 const patterns=[
 {re:/(\d+(?:[.,]\d+)?)\s*(?:teebeutel|tea\s*bags?|beutel)\s*(?:pro|per|für|for|\/)\s*(\d+(?:[.,]\d+)?)\s*(ml|l|liter)/i,unit:"bag"},
 {re:/(\d+(?:[.,]\d+)?)\s*(?:teelöffel|tsp|teaspoons?)\s*(?:pro|per|für|for|\/)\s*(\d+(?:[.,]\d+)?)\s*(ml|l|liter)/i,unit:"tsp"},
