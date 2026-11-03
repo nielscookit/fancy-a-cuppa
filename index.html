@@ -737,7 +737,7 @@ async function teaShow(i){
  if(i===0)teaSound(pourAudio);
  if(i===1)pourAudio.pause();
  if(i===2&&!bubblePlayed){bubblePlayed=true;clearTimeout(bubbleTimer);bubbleTimer=setTimeout(()=>{if(running&&teaPhase===2&&!milkTriggered)teaSound(bubbleAudio)},1030)}
- if(i===3){milkTriggered=true;clearTimeout(bubbleTimer);bubbleAudio.pause();clearTimeout(milkSoundTimer);milkSoundTimer=setTimeout(()=>teaSound(milkAudio),60)}
+ if(i===3){milkTriggered=true;clearTimeout(bubbleTimer);bubbleAudio.pause();clearTimeout(milkSoundTimer);milkSoundTimer=setTimeout(()=>{if(milkVideo&&!milkVideo.ended)teaSound(milkAudio)},60)}
  }catch(e){console.warn("Video transition",e)}
 }
 function videoSync(){if(!running){videoPause();return}const v=teaVideos[teaPhase];v.hidden=false;v.classList.add("visible");v.play().catch(()=>{});if(teaPhase===0&&pourAudio.paused)teaSound(pourAudio)}
@@ -809,8 +809,15 @@ function tick(){
 if(!running)return;
 remaining=Math.max(0,(deadline-Date.now())/1000);
 if(remaining<=0){
-const milkWasStarted=milkTriggered;
-stop();remaining=0;finished=true;if(milkWasStarted){milkVideo.hidden=false;milkVideo.classList.add("visible");}
+// Timer reaches zero while the milk clip is still playing: preserve its playback.
+clearTicker();running=false;remaining=0;finished=true;releaseWakeLock();
+pourAudio.pause();bubbleAudio.pause();
+if(milkTriggered){
+ milkVideo.hidden=false;milkVideo.classList.add("visible");
+ if(milkVideo.paused&&!milkVideo.ended)milkVideo.play().catch(e=>console.warn("Milk finish",e));
+}else{
+ videoPause();
+}
 $("message").textContent="";
 draw();
 playVoice().catch(()=>{});
