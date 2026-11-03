@@ -716,19 +716,27 @@ let teaPhase=0,teaToken=0,milkTriggered=false,milkSoundTimer=null,bubbleTimer=nu
 function teaSound(a){a.pause();try{a.currentTime=0}catch(e){};a.play().catch(e=>console.warn("Tea sound",e))}
 function teaStopSounds(){[pourAudio,bubbleAudio,milkAudio].forEach(a=>{a.pause();try{a.currentTime=0}catch(e){}});clearTimeout(milkSoundTimer);clearTimeout(bubbleTimer)}
 function videoPause(){teaVideos.forEach(v=>v.pause());teaStopSounds()}
-function videoReset(){++teaToken;videoPause();teaPhase=0;milkTriggered=false;bubblePlayed=false;lastStillTime=0;teaVideos.forEach((v,i)=>{v.classList.remove("visible");v.hidden=i!==0;try{v.currentTime=0}catch(e){}})}
+function videoReset(){++teaToken;videoPause();teaPhase=0;milkTriggered=false;bubblePlayed=false;lastStillTime=0;teaVideos.forEach((v,i)=>{v.classList.remove("visible");v.hidden=i!==0;v.style.removeProperty("display");v.style.removeProperty("visibility");v.style.removeProperty("opacity");v.style.removeProperty("z-index");try{v.currentTime=0}catch(e){}})}
 function teaReady(v){if(v.readyState>=2)return Promise.resolve();return new Promise((resolve,reject)=>{const ok=()=>{clean();resolve()},bad=()=>{clean();reject(new Error("Video load failed"))},clean=()=>{v.removeEventListener("loadeddata",ok);v.removeEventListener("error",bad)};v.addEventListener("loadeddata",ok,{once:true});v.addEventListener("error",bad,{once:true});v.load()})}
 async function teaShow(i){
  if(!running&&!(i===3&&finished))return;
  const token=++teaToken,next=teaVideos[i],prev=teaVideos[teaPhase];
  try{
-  await teaReady(next);
+  // The milk transition is time-critical. Never block it on a network readiness event.
+  if(i!==3)await teaReady(next);
   if(token!==teaToken||(!running&&!(i===3&&finished)))return;
   try{next.currentTime=0}catch(e){}
-  // Match the proven test: start incoming video without awaiting play().
   next.hidden=false;
   next.classList.add("visible");
-  next.play().catch(e=>console.warn("Tea video play failed",i,e));
+  if(i===3){
+   // Immediately bring milk above every other layer, even while its first frame decodes.
+   next.style.display="block";
+   next.style.visibility="visible";
+   next.style.opacity="1";
+   next.style.zIndex="10";
+  }
+  const playPromise=next.play();
+  if(playPromise)playPromise.catch(e=>console.warn("Tea video play failed",i,e));
   if(prev!==next){prev.classList.remove("visible");prev.hidden=true;prev.pause()}
   teaPhase=i;
   if(i===0)teaSound(pourAudio);
@@ -820,6 +828,7 @@ if(milkTriggered){
  // Preserve the milk video and its final frame after 00:00.
  milkVideo.hidden=false;
  milkVideo.classList.add("visible");
+ milkVideo.style.display="block";milkVideo.style.visibility="visible";milkVideo.style.opacity="1";milkVideo.style.zIndex="10";
  steepVideo.classList.remove("visible");
  brewVideo.classList.remove("visible");
  fillVideo.classList.remove("visible");
