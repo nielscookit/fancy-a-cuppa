@@ -19,10 +19,20 @@ const TEST_SECONDS=35;
 let deadline=0,timer=null,milkTriggered=false,milkDone=false;
 let phase=-1,active=false,transitioning=false;
 let bubblePlayed=false,lastStillTime=0;
-videos[3].addEventListener("timeupdate",()=>{
- if(!active||phase!==3||milkSoundTriggered||videos[3].currentTime<MILK_SOUND_OFFSET)return;
- milkSoundTriggered=true;milkSound.currentTime=0;milkSound.play().catch(()=>{});
-});
+let milkSoundTimer=null;
+function playMilkSound(){
+ if(!active||milkSoundTriggered)return;
+ milkSoundTriggered=true;
+ milkSound.pause();
+ try{milkSound.currentTime=0;}catch(e){}
+ milkSound.play().catch(e=>{status.textContent="Milchton konnte nicht abgespielt werden: "+e.message;});
+}
+function unlockSound(audio){
+ // Safari: establish playback permission inside the user's start gesture.
+ audio.muted=true;
+ const p=audio.play();
+ if(p)p.then(()=>{audio.pause();audio.currentTime=0;audio.muted=false;}).catch(()=>{audio.muted=false;});
+}
 const BUBBLE_AT=1.03;
 videos[2].addEventListener("timeupdate",()=>{
  const v=videos[2],t=v.currentTime;
@@ -44,7 +54,7 @@ async function show(i){
   if(!active){transitioning=false;return;}
   next.currentTime=0;
   if(i===2){bubblePlayed=false;lastStillTime=0;}
-  if(i===3){milkSoundTriggered=false;milkSound.pause();milkSound.currentTime=0;}
+  if(i===3){clearTimeout(milkSoundTimer);milkSoundTriggered=false;milkSound.pause();milkSound.currentTime=0;}
   // Start the incoming clip before removing the outgoing last frame.
   next.classList.add("active");
   const playPromise=next.play();
@@ -53,6 +63,7 @@ async function show(i){
   else{pourSound.pause();try{pourSound.currentTime=0}catch(e){}}
   if(previous&&previous!==next){previous.classList.remove("active");previous.pause();}
   phase=i;
+  if(i===3){milkSoundTimer=setTimeout(playMilkSound,60);}
  }catch(e){status.textContent="Video konnte nicht starten: "+e.message;start.disabled=false;}
  transitioning=false;
 }
@@ -69,13 +80,15 @@ function updateCountdown(){
 }
 
 start.addEventListener("click",async()=>{
- if(active)return;clearInterval(timer);videos.forEach(v=>{v.pause();v.classList.remove("active");try{v.currentTime=0}catch(e){}});phase=-1;transitioning=false;active=true;start.disabled=true;
+ if(active)return;
+ unlockSound(milkSound);clearInterval(timer);videos.forEach(v=>{v.pause();v.classList.remove("active");try{v.currentTime=0}catch(e){}});phase=-1;transitioning=false;active=true;start.disabled=true;
  status.textContent="Videos werden vorbereitet …";
  try{await Promise.all(videos.map(waitReady));if(active){milkTriggered=false;milkDone=false;deadline=performance.now()+TEST_SECONDS*1000;timer=setInterval(updateCountdown,100);updateCountdown();show(0);}}
  catch(e){status.textContent="Ladefehler: "+e.message;active=false;start.disabled=false;}
 });
 document.getElementById("reset").addEventListener("click",()=>{
  active=false;transitioning=false;phase=-1;
+ clearTimeout(milkSoundTimer);
  clearInterval(timer);timer=null;milkTriggered=false;countdown.textContent="00:35";
  pourSound.pause();try{pourSound.currentTime=0}catch(e){};
  bubbleSound.pause();try{bubbleSound.currentTime=0}catch(e){};bubblePlayed=false;lastStillTime=0;
