@@ -929,8 +929,8 @@ function renderDose(){
 const tea=activeTea(),ml=selectedMl();
 if(!tea)return;
 const valid=Number.isFinite(ml)&&ml>=50&&ml<=5000&&Number.isFinite(tea.dose)&&tea.dose>0&&tea.dose<=1000&&(!!tea.unit||selectedTea!=="free");
-$("doseResult").textContent=!valid?"Check water quantity":tea.type==="bag"?format(Math.ceil(ml*tea.dose/1000))+" tea bags":format(Math.round(ml*tea.dose/100)/10)+(tea.unit==="g"?" g":tea.unit==="tsp"?" tsp":tea.unit==="measure"?" level tea measures":" tea bags");
-$("doseHint").textContent=!Number.isFinite(tea.dose)?"Enter the tea quantity and reference water volume.":tea.type==="bag"?"Based on "+format(tea.dose)+" tea bags per litre (rounded up).":"Based on "+format(tea.dose)+(tea.unit==="g"?" g":tea.unit==="tsp"?" level teaspoons":" level tea measures")+" per litre.";
+$("doseResult").textContent=!valid?"Check water quantity":tea.type==="bag"?format(Math.round(ml*tea.dose/100)/10)+" tea bags":format(Math.round(ml*tea.dose/100)/10)+(tea.unit==="g"?" g":tea.unit==="tsp"?" tsp":tea.unit==="measure"?" level tea measures":" tea bags");
+$("doseHint").textContent=!Number.isFinite(tea.dose)?"Enter the tea quantity and reference water volume.":tea.type==="bag"?"Based on "+format(tea.dose)+" tea bags per litre.":"Based on "+format(tea.dose)+(tea.unit==="g"?" g":tea.unit==="tsp"?" level teaspoons":" level tea measures")+" per litre.";
 if(tea.provisional)$("doseHint").textContent+=" Approximate amount — check the pack.";
 $("brewMinutes").textContent=brewMin+" MIN";
 if(selectedTea==="free"&&$("freeMin").value)$("freeMin").value=brewMin;
