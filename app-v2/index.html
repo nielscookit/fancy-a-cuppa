@@ -948,7 +948,10 @@ function canonicalSearch(s){
  for(const [from,to] of normalizedAliases)out=out.replace(new RegExp(" "+from+" ","g")," "+to+" ");
  return out.trim().replace(/\s+/g," ");
 }
-function allSearchTeas(){return [...cloudTeas,...saved,...builtins];}
+function allSearchTeas(){
+ const fromLegacy=saved.filter(t=>!cloudTeas.some(c=>simplifySearch(c.name)===simplifySearch(t.name)&&c.unit===t.unit));
+ return [...cloudTeas,...fromLegacy,...builtins];
+}
 function matchTea(tea,query){
  const tokens=canonicalSearch(query).split(" ").filter(Boolean);
  const info=[tea.name,tea.brand,tea.rawName,tea.category,categoryLabels[tea.category],tea.subcategory,
@@ -1385,7 +1388,7 @@ $("scanSave").addEventListener("click",async()=>{
 
 FancyForm.setup("free");FancyForm.setup("scan");
 renderTeas();renderVolumes();selectTea();updateScanUnits();
-if(window.FancyCloud)FancyCloud.list().then(rows=>{cloudTeas=rows.filter(t=>!saved.some(v=>v.name===t.name&&v.unit===t.unit));renderTeas();}).catch(e=>console.warn("Community teas unavailable",e));
+if(window.FancyCloud)FancyCloud.list().then(rows=>{cloudTeas=rows;renderTeas();}).catch(e=>console.warn("Community teas unavailable",e));
 draw();
 teaPlayer.prepare().catch(e=>console.warn("Video preload",e));
 })();
