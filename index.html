@@ -480,7 +480,7 @@ body:not(.timer-focus) main{overflow-anchor:none}
 <main>
 <section class="timer" aria-label="Tea timer">
 <div class="dial">
-<div class="tea-visual" aria-hidden="true"><video id="fillVideo" preload="auto" muted playsinline></video><video id="brewVideo" preload="auto" muted playsinline hidden></video><video id="steepVideo" preload="auto" muted playsinline loop hidden></video><video id="milkVideo" preload="auto" muted playsinline hidden></video></div>
+<div class="tea-visual" aria-hidden="true"><video id="fillVideo" preload="auto" muted playsinline></video><video id="brewVideo" preload="auto" muted playsinline></video><video id="steepVideo" preload="auto" muted playsinline loop></video><video id="milkVideo" preload="auto" muted playsinline></video></div>
 <div class="center">
 <div id="clock" class="clock" role="timer" aria-label="Time remaining">02:00</div>
 
@@ -709,21 +709,23 @@ let chosen=2,total=120,remaining=120,deadline=0,running=false,finished=false,tic
 let warnedThirty=false;
 const fillVideo=$("fillVideo"),brewVideo=$("brewVideo"),steepVideo=$("steepVideo"),milkVideo=$("milkVideo");
 const teaVideos=[fillVideo,brewVideo,steepVideo,milkVideo];
-["./FIllSNB.mp4","./brewSNB.mp4","./stillSNB.mp4","./MILKSNB.mp4"].forEach((src,i)=>{const v=teaVideos[i];v.src=src;v.muted=true;v.defaultMuted=true;v.preload="auto";v.setAttribute("playsinline","");v.load()});
+["./FIllSNB.mp4","./brewSNB.mp4","./stillSNB.mp4","./MILKSNB.mp4"].forEach((src,i)=>{const v=teaVideos[i];v.src=src;v.muted=true;v.defaultMuted=true;v.preload="auto";v.setAttribute("playsinline","");v.setAttribute("webkit-playsinline","");v.load()});
 const pourAudio=new Audio("./BrewNEW2.mp3"),bubbleAudio=new Audio("./BlubbKlein.mp3"),milkAudio=new Audio("./BlubbMILCH.mp3");
 [pourAudio,bubbleAudio,milkAudio].forEach(a=>a.preload="auto");
 let teaPhase=0,teaToken=0,milkTriggered=false,milkSoundTimer=null,bubbleTimer=null,bubblePlayed=false,lastStillTime=0;
 function teaSound(a){a.pause();try{a.currentTime=0}catch(e){};a.play().catch(e=>console.warn("Tea sound",e))}
 function teaStopSounds(){[pourAudio,bubbleAudio,milkAudio].forEach(a=>{a.pause();try{a.currentTime=0}catch(e){}});clearTimeout(milkSoundTimer);clearTimeout(bubbleTimer)}
 function videoPause(){teaVideos.forEach(v=>v.pause());teaStopSounds()}
-function videoReset(){++teaToken;videoPause();teaPhase=0;milkTriggered=false;bubblePlayed=false;lastStillTime=0;teaVideos.forEach((v,i)=>{v.classList.remove("visible");v.hidden=i!==0;v.style.removeProperty("display");v.style.removeProperty("visibility");v.style.removeProperty("opacity");v.style.removeProperty("z-index");try{v.currentTime=0}catch(e){}})}
+function videoReset(){++teaToken;videoPause();teaPhase=0;milkTriggered=false;bubblePlayed=false;lastStillTime=0;teaVideos.forEach((v,i)=>{v.classList.remove("visible");v.hidden=false;v.style.removeProperty("display");v.style.removeProperty("visibility");v.style.removeProperty("opacity");v.style.removeProperty("z-index");try{v.currentTime=0}catch(e){}})}
 function teaReady(v){if(v.readyState>=2)return Promise.resolve();return new Promise((resolve,reject)=>{const ok=()=>{clean();resolve()},bad=()=>{clean();reject(new Error("Video load failed"))},clean=()=>{v.removeEventListener("loadeddata",ok);v.removeEventListener("error",bad)};v.addEventListener("loadeddata",ok,{once:true});v.addEventListener("error",bad,{once:true});v.load()})}
 async function teaShow(i){
  if(!running&&!(i===3&&finished))return;
  const token=++teaToken,next=teaVideos[i],prev=teaVideos[teaPhase];
  try{
   // The milk transition is time-critical. Never block it on a network readiness event.
-  if(i!==3)await teaReady(next);
+  // Safari may ignore preload; the first video must start in the tap gesture.
+  // For the milk clip, wait for a decoded frame instead of playing a blank layer.
+  if(i===3)await teaReady(next);
   if(token!==teaToken||(!running&&!(i===3&&finished)))return;
   try{next.currentTime=0}catch(e){}
   next.hidden=false;
@@ -737,7 +739,7 @@ async function teaShow(i){
   }
   const playPromise=next.play();
   if(playPromise)playPromise.catch(e=>console.warn("Tea video play failed",i,e));
-  if(prev!==next){prev.classList.remove("visible");prev.hidden=true;prev.pause()}
+  if(prev!==next){prev.classList.remove("visible");prev.pause()}
   teaPhase=i;
   if(i===0)teaSound(pourAudio);
   if(i===1)pourAudio.pause();
@@ -750,9 +752,9 @@ async function teaShow(i){
    clearTimeout(milkSoundTimer);
    milkSoundTimer=setTimeout(()=>teaSound(milkAudio),60);
   }
- }catch(e){console.warn("Tea video transition failed",i,e)}
+ }catch(e){console.warn("Tea video transition failed",i,e);$("message").textContent="Video "+(i+1)+" konnte auf diesem Gerät nicht geladen werden."}
 }
-function videoSync(){if(!running){videoPause();return}const v=teaVideos[teaPhase];v.hidden=false;v.classList.add("visible");v.play().catch(()=>{});if(teaPhase===0&&pourAudio.paused)teaSound(pourAudio)}
+function videoSync(){if(!running){videoPause();return}const v=teaVideos[teaPhase];v.hidden=false;v.classList.add("visible");v.play().catch(e=>console.warn("Tea resume failed",e));if(teaPhase===0&&pourAudio.paused)teaSound(pourAudio)}
 fillVideo.addEventListener("ended",()=>{pourAudio.pause();if(running&&!milkTriggered)teaShow(1)});
 brewVideo.addEventListener("ended",()=>{if(running&&!milkTriggered)teaShow(2)});
 
