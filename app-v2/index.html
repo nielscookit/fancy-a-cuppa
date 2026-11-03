@@ -504,6 +504,12 @@ body:not(.timer-focus) main{overflow-anchor:none}
 .tea-card-action{border:0;background:transparent;color:#792b40;font-size:11px;font-weight:600;padding:6px;cursor:pointer}
 .tea-card-remove .material-symbols-outlined{font-size:20px}
 #teaSearchHeader[hidden],#teaSearchMode[hidden],#teaDetails[hidden],#freeFields[hidden]{display:none!important}
+
+/* iOS Safari: no automatic focus/double-tap zoom; preserve pinch-to-zoom. */
+html,body{touch-action:manipulation}
+button,a,label,input,select,textarea{touch-action:manipulation}
+input:not([type="file"]),select,textarea{font-size:16px!important}
+.tea-search-field input{font-size:16px!important}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400,0..1,0" rel="stylesheet">
 </head>
