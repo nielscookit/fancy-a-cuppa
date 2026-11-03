@@ -1,8 +1,68 @@
 <!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#faf9f6"><title>Fancy a Cuppa — Integrationstest</title>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#faf9f6"><title>Fancy a Cuppa</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}body{margin:0;background:#faf9f6;color:#222;font-family:Arial,system-ui,sans-serif}main{max-width:480px;min-height:100dvh;margin:auto;padding:20px 20px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column}header{font-size:13px;color:#777;letter-spacing:.08em;text-transform:uppercase}h1{font-size:24px;margin:8px 0 6px}p{line-height:1.4}.screen{flex:1;display:flex;align-items:center;justify-content:center;min-height:280px}.video-stage{position:relative;width:100%;aspect-ratio:1;overflow:hidden;-webkit-mask-image:radial-gradient(circle closest-side at center,#000 68%,rgba(0,0,0,.92) 77%,rgba(0,0,0,.5) 88%,transparent 100%);mask-image:radial-gradient(circle closest-side at center,#000 68%,rgba(0,0,0,.92) 77%,rgba(0,0,0,.5) 88%,transparent 100%)}video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;visibility:hidden}video.active{opacity:1;visibility:visible}#countdown{font-size:32px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;margin:0 0 8px}#status{font-size:14px;color:#666;min-height:40px;text-align:center}.actions{display:grid;gap:12px}button{min-height:66px;border:0;border-radius:6px;background:#76233c;color:#fff;font-size:18px;font-weight:700;cursor:pointer}button.secondary{background:#252525}button:disabled{opacity:.5}.note{font-size:12px;color:#777;margin-top:16px}.custom-tea{margin:0 0 12px}.custom-tea summary{cursor:pointer;color:#76233c;font-weight:700;padding:9px 0}.custom-tea form{display:grid;gap:9px;padding:12px;background:#f0efeb;border-radius:8px}.custom-tea label{display:grid;gap:5px;font-size:13px}.custom-tea input,.custom-tea select{min-height:43px;border:1px solid #ccc;border-radius:6px;background:white;padding:8px;font:inherit}.custom-tea .form-actions{display:flex;gap:8px}.custom-tea button{min-height:44px;font-size:14px;flex:1}.custom-tea button.secondary{background:#555}.custom-tea .form-message{font-size:12px;color:#76233c;min-height:16px}.dose-panel{display:grid;gap:8px;margin:0 0 14px;padding:12px;background:#f0efeb;border-radius:8px}.dose-panel label{font-size:13px;color:#555}.dose-panel select,.dose-panel input{width:100%;min-height:44px;padding:0 10px;background:#fff;border:1px solid #ccc;border-radius:6px;font:inherit;color:#222}.dose-result{font-size:17px;font-weight:700}.dose-note{font-size:12px;color:#666}.tea-select{display:grid;gap:7px;margin:10px 0 12px}.tea-select label{font-size:13px;color:#555}.tea-select select{width:100%;min-height:48px;padding:0 12px;background:#fff;border:1px solid #ccc;border-radius:6px;font:inherit;color:#222}.tea-hint{font-size:12px;color:#777;min-height:16px}.time-select{display:flex;align-items:center;justify-content:center;gap:16px;margin:8px 0 16px}.time-select button{width:58px;min-height:58px;background:#ecebea;color:#222;font-size:26px}.time-select button:disabled{opacity:.35}.time-select output{min-width:100px;text-align:center;font-size:18px;font-weight:700}.quick-test{display:flex;justify-content:center;margin-bottom:12px}.quick-test button{min-height:38px;padding:0 16px;background:#ecebea;color:#333;font-size:12px}
-</style></head><body><main><header>Fancy a Cuppa · Testversion</header><h1>Videokomponente · Wiederholungstest</h1><div class="screen"><div class="video-stage"><video id="clip0" playsinline muted preload="auto"></video><video id="clip1" playsinline muted preload="auto"></video><video id="clip2" playsinline muted preload="auto" loop></video><video id="clip3" playsinline muted preload="auto"></video></div></div><div class="tea-select"><label for="teaPreset">Teesorte</label><select id="teaPreset"><option value="custom">Freie Ziehzeit</option><option value="fbop">Assam FBOP Second Flush</option><option value="hatfield">Assam STGBOP Hatfield Second Flush</option><option value="ctc">Assam CTC Tinsukia</option><option value="pgtips">PG Tips</option><option value="tetley">Tetley</option><option value="generic">Schwarztee, lose (allgemein)</option></select><div id="teaHint" class="tea-hint">Ziehzeit frei wählen.</div></div><details class="custom-tea" id="customTeaDetails"><summary>Eigenen Tee anlegen / verwalten</summary><form id="customTeaForm"><label>Name<input id="ownTeaName" maxlength="80" required placeholder="z. B. Mein Assam"></label><label>Art<select id="ownTeaType"><option value="loose">Loser Tee</option><option value="bag">Teebeutel</option></select></label><label>Ziehzeit in Minuten<input id="ownTeaMinutes" type="number" min="1" max="30" step="1" value="4" required></label><label id="ownTeaDoseLabel">Teemaß-Löffel pro 1.000 ml<input id="ownTeaDose" type="number" min="0.5" max="100" step="0.5" value="5" required></label><div class="form-actions"><button type="submit" id="saveOwnTea">TEE SPEICHERN</button><button type="button" class="secondary" id="deleteOwnTea" hidden>TEE LÖSCHEN</button></div><div class="form-message" id="ownTeaMessage" role="status"></div></form></details><div class="dose-panel"><label for="vessel">Gefäß / Wassermenge</label><select id="vessel"><option value="250">Tasse · 250 ml</option><option value="500">Kleine Kanne · 500 ml</option><option value="900" selected>Große Kanne · 900 ml</option><option value="1000">Kanne · 1.000 ml</option><option value="custom">Freie Wassermenge</option></select><input id="customMl" type="number" min="50" max="5000" step="50" value="900" inputmode="numeric" aria-label="Wassermenge in Millilitern" hidden><div id="doseResult" class="dose-result" aria-live="polite"></div><div id="doseNote" class="dose-note"></div></div><div class="time-select"><button id="minus" aria-label="Eine Minute weniger">−</button><output id="minutesLabel">2 MIN</output><button id="plus" aria-label="Eine Minute mehr">+</button></div><div class="quick-test"><button id="quickTest">35 SEK. TEST</button></div><p id="countdown">02:00</p><p id="status" role="status">Bereit: Einfüllen → Teeziehen → Loop → Milch</p><div class="actions"><button id="start">TEST STARTEN</button><button id="pause" class="secondary" disabled>PAUSE</button><button class="secondary" id="reset">ZURÜCKSETZEN</button></div><p class="note">Unabhängiger Integrationstest mit den bewährten SNB-Videos. Nach jedem vollständigen Durchlauf erneut TEST STARTEN drücken. Die Haupt-App bleibt unverändert.</p></main>
+/* V2 visual restoration based on the original Fancy a Cuppa UI */
+:root{--accent:#792b40;font-family:"Roboto Mono",monospace}
+body{font-family:"Roboto Mono",monospace;font-size:13px;background:#faf9f6;color:#1d1d1d}
+main{max-width:480px;min-height:100dvh;padding:12px 20px max(45px,env(safe-area-inset-bottom));display:block}
+header,.note{display:none}
+h1{display:none}
+button{font-family:inherit;font-size:16px;font-weight:600;border-radius:6px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.screen{display:none}
+#countdown{font-family:Roboto,Arial,sans-serif;font-size:clamp(54px,14vw,68px);font-weight:700;letter-spacing:-2px;line-height:1.1;margin:0 0 22px}
+.time-select{gap:18px;margin:24px 0 24px}
+.time-select button{width:76px;height:76px;min-height:76px;flex:0 0 76px;border-radius:50%;background:#ecebea;color:#aaa8a6;font-size:32px;font-weight:700}
+.time-select output{min-width:104px;font-size:36px;font-weight:600;letter-spacing:-1px}
+.actions{display:flex;gap:9px}
+.actions button{min-height:66px;flex:1;padding:12px 8px;background:var(--accent);color:#fff}
+.actions button.secondary{background:#ecebea;color:#222}
+#pause:disabled{display:none}
+#reset{flex:0 0 66px;font-size:13px}
+#status{font-size:14px;margin:14px 0 0;min-height:20px}
+.tea-select{margin:0 0 16px}
+.tea-select label{font-size:12px;font-weight:600;letter-spacing:.02em}
+.tea-select select,.dose-panel select,.dose-panel input,.custom-tea input,.custom-tea select{border:0;border-radius:6px;background:#ecebea;min-height:52px;font-family:inherit}
+.tea-select select{min-height:66px;background:#ecebea}
+.tea-hint,.dose-note{font-size:12px;line-height:1.6}
+.dose-panel{background:transparent;padding:0;margin:0 0 20px;gap:12px}
+.dose-panel label{font-size:12px;font-weight:600}
+.dose-result{font-size:19px;background:#fff;padding:14px 0}
+.custom-tea{margin:0 0 16px}
+.custom-tea summary{background:#ecebea;border-radius:6px;text-align:center;padding:17px;color:#292929;font-size:14px;font-weight:600;min-height:52px;list-style:none}
+.custom-tea summary::-webkit-details-marker{display:none}
+.custom-tea form{margin-top:12px;background:transparent;padding:0;gap:12px}
+.custom-tea button{min-height:52px}
+.custom-tea button.secondary{background:#ecebea;color:#222}
+.quick-test{margin:16px 0 0}
+.quick-test button{background:#ecebea;color:#777;border-radius:6px}
+.setup-title{font-size:12px;font-weight:600;letter-spacing:1px;margin:24px 0 12px}
+.dose-toggle{display:block;width:100%;min-height:66px;border:0;border-radius:6px;background:#ecebea;color:#292929;font-size:16px;font-weight:600;margin:12px 0 0}
+.dose-toggle[aria-expanded="true"]{background:#333;color:#fff}
+.dose-content{padding-top:24px}
+.dose-content[hidden]{display:none!important}
+.vessel-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.vessel-options button{min-height:66px;background:#ecebea;color:#292929;font-size:16px}
+.vessel-options button.selected{background:#333;color:#fff}
+#vessel{display:none}
+body.timer-focus{overflow:hidden}
+body.timer-focus main{height:100dvh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 20px max(16px,env(safe-area-inset-bottom))}
+body.timer-focus .setup-title,body.timer-focus .tea-select,body.timer-focus .dose-toggle,body.timer-focus .dose-content,body.timer-focus .time-select,body.timer-focus .quick-test,body.timer-focus .custom-tea{display:none!important}
+body.timer-focus .screen{display:flex;flex:0 0 auto;min-height:0;width:min(330px,calc(100vw - 40px),calc(100dvh - 250px));aspect-ratio:1;margin:0 auto}
+body.timer-focus .video-stage{width:100%;height:100%}
+body.timer-focus #countdown{font-family:Roboto,Arial,sans-serif;font-style:italic;color:#908c36;background:#fff;padding:12px 18px;font-size:clamp(42px,11vw,58px);margin:0}
+body.timer-focus #status{display:none}
+body.timer-focus .actions{width:100%;max-width:360px;margin-top:clamp(48px,12vh,128px);gap:12px}
+body.timer-focus #reset{flex:1}
+body.timer-focus #pause{display:block}
+body.timer-focus #start:disabled{display:none}
+body.timer-focus #pause:disabled{display:none}
+body.timer-focus #start:not(:disabled){display:block}
+body.timer-focus .actions button{min-height:66px}
+@media(max-height:680px){body.timer-focus .actions{margin-top:28px}}
+[hidden]{display:none!important}
+</style></head><body><main><header>Fancy a Cuppa · Testversion</header><h1>Videokomponente · Wiederholungstest</h1><div class="screen"><div class="video-stage"><video id="clip0" playsinline muted preload="auto"></video><video id="clip1" playsinline muted preload="auto"></video><video id="clip2" playsinline muted preload="auto" loop></video><video id="clip3" playsinline muted preload="auto"></video></div></div><div class="setup-title">YOUR TEA</div><div class="tea-select"><label for="teaPreset">Teesorte</label><select id="teaPreset"><option value="custom">Freie Ziehzeit</option><option value="fbop">Assam FBOP Second Flush</option><option value="hatfield">Assam STGBOP Hatfield Second Flush</option><option value="ctc">Assam CTC Tinsukia</option><option value="pgtips">PG Tips</option><option value="tetley">Tetley</option><option value="generic">Schwarztee, lose (allgemein)</option></select><div id="teaHint" class="tea-hint">Ziehzeit frei wählen.</div></div><details class="custom-tea" id="customTeaDetails"><summary>Eigenen Tee anlegen / verwalten</summary><form id="customTeaForm"><label>Name<input id="ownTeaName" maxlength="80" required placeholder="z. B. Mein Assam"></label><label>Art<select id="ownTeaType"><option value="loose">Loser Tee</option><option value="bag">Teebeutel</option></select></label><label>Ziehzeit in Minuten<input id="ownTeaMinutes" type="number" min="1" max="30" step="1" value="4" required></label><label id="ownTeaDoseLabel">Teemaß-Löffel pro 1.000 ml<input id="ownTeaDose" type="number" min="0.5" max="100" step="0.5" value="5" required></label><div class="form-actions"><button type="submit" id="saveOwnTea">TEE SPEICHERN</button><button type="button" class="secondary" id="deleteOwnTea" hidden>TEE LÖSCHEN</button></div><div class="form-message" id="ownTeaMessage" role="status"></div></form></details><button id="doseToggle" class="dose-toggle" type="button" aria-expanded="false" aria-controls="doseContent">HOW D’YOU TAKE IT?</button><div id="doseContent" class="dose-content" hidden><div class="setup-title">WATER & DOSAGE</div><div class="vessel-options" id="vesselOptions"></div><div class="dose-panel"><label for="vessel">Gefäß / Wassermenge</label><select id="vessel"><option value="250">Tasse · 250 ml</option><option value="500">Kleine Kanne · 500 ml</option><option value="900" selected>Große Kanne · 900 ml</option><option value="1000">Kanne · 1.000 ml</option><option value="custom">Freie Wassermenge</option></select><input id="customMl" type="number" min="50" max="5000" step="50" value="900" inputmode="numeric" aria-label="Wassermenge in Millilitern" hidden><div id="doseResult" class="dose-result" aria-live="polite"></div><div id="doseNote" class="dose-note"></div></div></div><div class="time-select"><button id="minus" aria-label="Eine Minute weniger">−</button><output id="minutesLabel">2 MIN</output><button id="plus" aria-label="Eine Minute mehr">+</button></div><div class="quick-test"><button id="quickTest">35 SEK. TEST</button></div><p id="countdown">02:00</p><p id="status" role="status">Bereit: Einfüllen → Teeziehen → Loop → Milch</p><div class="actions"><button id="start">FANCY A CUPPA?</button><button id="pause" class="secondary" disabled>PAUSE</button><button class="secondary" id="reset">↻</button></div><p class="note">Unabhängiger Integrationstest mit den bewährten SNB-Videos. Nach jedem vollständigen Durchlauf erneut TEST STARTEN drücken. Die Haupt-App bleibt unverändert.</p></main>
 <script>
 const base="https://raw.githubusercontent.com/nielscookit/fancy-a-cuppa/kling-video-test/";
 const clips=["../FIllSNB.mp4","../brewSNB.mp4","../stillSNB.mp4","../MILKSNB.mp4"];
@@ -31,13 +91,19 @@ function persistOwnTeas(next){try{localStorage.setItem(OWN_TEA_KEY,JSON.stringif
 customTeaForm.addEventListener("submit",e=>{e.preventDefault();if(active)return;const name=ownTeaName.value.trim(),type=ownTeaType.value,min=Number(ownTeaMinutes.value),dose=Number(ownTeaDose.value);if(!name||name.length>80||!["loose","bag"].includes(type)||!Number.isInteger(min)||min<1||min>30||!Number.isFinite(dose)||dose<0.5||dose>100){ownTeaMessage.textContent="Bitte gültigen Namen, 1–30 Minuten und eine Dosierung von 0,5–100 eingeben.";return;}const previous=currentOwnTea(),id=previous?previous.id:"own-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7);const item={id,name,type,min,dose};const next=previous?ownTeas.map(t=>t.id===id?item:t):[...ownTeas,item];if(!persistOwnTeas(next))return;refreshOwnTeaOptions();teaPreset.value=id;selectedSeconds=min*60;teaHint.textContent="Eigener Tee · "+min+" Minuten · manuell anpassbar.";updateSelection();updateDose();updateOwnTeaForm();ownTeaMessage.textContent=previous?"Änderungen gespeichert.":"Tee gespeichert.";});
 deleteOwnTea.addEventListener("click",()=>{if(active)return;const t=currentOwnTea();if(!t)return;if(!persistOwnTeas(ownTeas.filter(x=>x.id!==t.id)))return;refreshOwnTeaOptions();teaPreset.value="custom";teaHint.textContent="Ziehzeit frei wählen.";updateOwnTeaForm();updateDose();ownTeaMessage.textContent="Eigener Tee gelöscht.";});
 refreshOwnTeaOptions();
+const doseToggle=document.getElementById("doseToggle"),doseContent=document.getElementById("doseContent");
+doseToggle.addEventListener("click",()=>{const open=doseContent.hidden;doseContent.hidden=!open;doseToggle.setAttribute("aria-expanded",String(open));});
+const vesselOptions=document.getElementById("vesselOptions");
+const vesselNames={"250":"TASSE · 250 ML","500":"KLEINE KANNE · 500 ML","900":"GROSSE KANNE · 900 ML","1000":"KANNE · 1 L","custom":"FREI"};
+function syncVesselButtons(){vesselOptions.querySelectorAll("button").forEach(b=>{b.classList.toggle("selected",b.dataset.value===vessel.value);b.disabled=active;});}
+Object.entries(vesselNames).forEach(([value,label])=>{const b=document.createElement("button");b.type="button";b.textContent=label;b.dataset.value=value;b.addEventListener("click",()=>{if(active)return;vessel.value=value;updateDose();syncVesselButtons();});vesselOptions.appendChild(b);});
 const vessel=document.getElementById("vessel"),customMl=document.getElementById("customMl"),doseResult=document.getElementById("doseResult"),doseNote=document.getElementById("doseNote");
 function updateDose(){const isCustom=vessel.value==="custom";customMl.hidden=!isCustom;const ml=isCustom?Number(customMl.value):Number(vessel.value);if(!Number.isFinite(ml)||ml<50||ml>5000){doseResult.textContent="Bitte 50–5.000 ml eingeben.";doseNote.textContent="";return;}const own=currentOwnTea(),bags=own?own.type==="bag":["pgtips","tetley"].includes(teaPreset.value);if(bags){const count=Math.ceil(ml*(own?own.dose/1000:1/250));doseResult.textContent=count+" Teebeutel für "+ml+" ml";doseNote.textContent=own?"Eigene Dosierung: "+own.dose+" Beutel pro 1.000 ml, aufgerundet.":"Richtwert: 1 Beutel pro 250 ml (aufgerundet).";}else{const tsp=own?Math.round(ml*own.dose/1000*2)/2:Math.round(ml/250+1);doseResult.textContent=tsp+" Teemaß-Löffel für "+ml+" ml";doseNote.textContent=own?"Eigene Dosierung: "+own.dose+" Teemaß-Löffel pro 1.000 ml.":"Orientierungswert: 1 Teemaß je 250 ml + 1 für die Kanne, auf ganze Löffel gerundet. Je nach Tee anpassen.";}}
-vessel.addEventListener("change",updateDose);customMl.addEventListener("input",updateDose);
+vessel.addEventListener("change",()=>{updateDose();syncVesselButtons();});customMl.addEventListener("input",updateDose);
 teaPreset.addEventListener("change",()=>{if(active)return;const id=teaPreset.value;ownTeaMessage.textContent="";updateOwnTeaForm();if(id==="custom"){teaHint.textContent="Ziehzeit frei wählen.";updateDose();return;}const own=currentOwnTea(),min=own?own.min:teaTimes[id];selectedSeconds=min*60;teaHint.textContent=(own?"Eigener Tee":"Vorschlag")+": "+min+" Minuten · manuell anpassbar.";updateSelection();updateDose();});
 const minus=document.getElementById("minus"),plus=document.getElementById("plus"),minutesLabel=document.getElementById("minutesLabel"),quickTest=document.getElementById("quickTest");
 function formatTime(seconds){const n=Math.max(0,Math.ceil(seconds));return String(Math.floor(n/60)).padStart(2,"0")+":"+String(n%60).padStart(2,"0");}
-function updateSelection(){minutesLabel.textContent=selectedSeconds===35?"35 SEK":(selectedSeconds/60)+" MIN";countdown.textContent=formatTime(selectedSeconds);minus.disabled=active||selectedSeconds<=60;plus.disabled=active||selectedSeconds>=1800;quickTest.disabled=active;teaPreset.disabled=active;vessel.disabled=active;customMl.disabled=active;customTeaForm.querySelectorAll("input,select,button").forEach(el=>el.disabled=active);}
+function updateSelection(){minutesLabel.textContent=selectedSeconds===35?"35 SEK":(selectedSeconds/60)+" MIN";countdown.textContent=formatTime(selectedSeconds);minus.disabled=active||selectedSeconds<=60;plus.disabled=active||selectedSeconds>=1800;quickTest.disabled=active;syncVesselButtons();teaPreset.disabled=active;vessel.disabled=active;customMl.disabled=active;customTeaForm.querySelectorAll("input,select,button").forEach(el=>el.disabled=active);}
 minus.addEventListener("click",()=>{if(active)return;selectedSeconds=Math.max(60,selectedSeconds===35?60:selectedSeconds-60);updateSelection();});
 plus.addEventListener("click",()=>{if(active)return;selectedSeconds=Math.min(1800,selectedSeconds===35?60:selectedSeconds+60);updateSelection();});
 quickTest.addEventListener("click",()=>{if(active)return;selectedSeconds=35;updateSelection();});
@@ -100,7 +166,7 @@ async function show(i){
 }
 videos[0].addEventListener("ended",()=>{pourSound.pause();try{pourSound.currentTime=0}catch(e){};if(active&&!paused)show(1)});
 videos[1].addEventListener("ended",()=>{if(active&&!paused&&!milkTriggered)show(2)});
-videos[3].addEventListener("ended",()=>{milkDone=true;active=false;paused=false;pauseButton.disabled=true;status.textContent="Fertig · Milch im Tee. Nächsten Durchlauf starten.";start.disabled=false;start.textContent="ERNEUT TESTEN";updateSelection();});
+videos[3].addEventListener("ended",()=>{milkDone=true;active=false;paused=false;pauseButton.disabled=true;document.body.classList.remove("timer-focus");status.textContent="Fertig · Milch im Tee. Nächsten Durchlauf starten.";start.disabled=false;start.textContent="FANCY A CUPPA?";updateSelection();});
 function updateCountdown(){
  if(!active||paused)return;
  const left=Math.max(0,(deadline-performance.now())/1000);
@@ -113,20 +179,20 @@ function updateCountdown(){
 start.addEventListener("click",async()=>{
  if(active)return;
  paused=false;remainingMs=0;pauseButton.disabled=false;pauseButton.textContent="PAUSE";
- unlockSound(milkSound);clearInterval(timer);videos.forEach(v=>{v.pause();v.classList.remove("active");try{v.currentTime=0}catch(e){}});phase=-1;transitioning=false;active=true;start.disabled=true;start.textContent="TEST LÄUFT";minus.disabled=true;plus.disabled=true;quickTest.disabled=true;teaPreset.disabled=true;vessel.disabled=true;customMl.disabled=true;customTeaForm.querySelectorAll("input,select,button").forEach(el=>el.disabled=true);
+ unlockSound(milkSound);clearInterval(timer);videos.forEach(v=>{v.pause();v.classList.remove("active");try{v.currentTime=0}catch(e){}});phase=-1;transitioning=false;active=true;document.body.classList.add("timer-focus");start.disabled=true;start.textContent="FANCY A CUPPA?";minus.disabled=true;plus.disabled=true;quickTest.disabled=true;syncVesselButtons();teaPreset.disabled=true;vessel.disabled=true;customMl.disabled=true;customTeaForm.querySelectorAll("input,select,button").forEach(el=>el.disabled=true);
  status.textContent="Videos werden vorbereitet …";
  try{await Promise.all(videos.map(waitReady));if(active){milkTriggered=false;milkDone=false;deadline=performance.now()+selectedSeconds*1000;timer=setInterval(updateCountdown,100);updateCountdown();show(0);}}
- catch(e){status.textContent="Ladefehler: "+e.message;active=false;start.disabled=false;pauseButton.disabled=true;}
+ catch(e){status.textContent="Ladefehler: "+e.message;active=false;document.body.classList.remove("timer-focus");start.disabled=false;pauseButton.disabled=true;}
 });
 document.getElementById("reset").addEventListener("click",()=>{
- active=false;paused=false;remainingMs=0;pauseButton.disabled=true;pauseButton.textContent="PAUSE";transitioning=false;phase=-1;
+ active=false;document.body.classList.remove("timer-focus");paused=false;remainingMs=0;pauseButton.disabled=true;pauseButton.textContent="PAUSE";transitioning=false;phase=-1;
  clearTimeout(milkSoundTimer);
  clearInterval(timer);timer=null;milkTriggered=false;countdown.textContent=formatTime(selectedSeconds);
  pourSound.pause();try{pourSound.currentTime=0}catch(e){};
  bubbleSound.pause();try{bubbleSound.currentTime=0}catch(e){};bubblePlayed=false;lastStillTime=0;
  milkSound.pause();try{milkSound.currentTime=0}catch(e){};milkSoundTriggered=false;
  videos.forEach(v=>{v.pause();v.classList.remove("active");try{v.currentTime=0}catch(e){}});
- start.disabled=false;start.textContent="TEST STARTEN";updateSelection();status.textContent="Bereit: Einfüllen → Teeziehen → Idle-Loop";
+ start.disabled=false;start.textContent="FANCY A CUPPA?";updateSelection();status.textContent="Bereit: Einfüllen → Teeziehen → Idle-Loop";
 });
-updateSelection();updateDose();
+updateSelection();updateDose();syncVesselButtons();
 </script></body></html>
