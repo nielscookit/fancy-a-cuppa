@@ -250,10 +250,10 @@ body.timer-focus .timer .tea-visual{display:block;width:min(330px,100%);aspect-r
 .tea-visual{display:none}
 .tea-visual video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .tea-visual video[hidden]{display:none!important}
-.tea-visual{background:#faf9f6;isolation:isolate;-webkit-mask-image:radial-gradient(ellipse 70% 70% at center,#000 67%,transparent 100%);mask-image:radial-gradient(ellipse 70% 70% at center,#000 67%,transparent 100%)}
+.tea-visual{background:#faf9f6;isolation:isolate;-webkit-mask-image:radial-gradient(circle closest-side at center,#000 68%,rgba(0,0,0,.92) 77%,rgba(0,0,0,.5) 88%,transparent 100%);mask-image:radial-gradient(circle closest-side at center,#000 68%,rgba(0,0,0,.92) 77%,rgba(0,0,0,.5) 88%,transparent 100%)}
 .tea-visual video{background:#faf9f6}
-.tea-visual video#steepVideo{opacity:0;transition:opacity .55s ease}
-.tea-visual video#steepVideo.visible{opacity:1}
+.tea-visual video{visibility:hidden;opacity:0}
+.tea-visual video.visible{visibility:visible;opacity:1}
 body.timer-focus .timer .clock{font-size:clamp(42px,11vw,58px)}
 .timer > .stepper{margin:28px 0 24px;gap:18px}
 .timer > .stepper .round{width:72px;height:72px;min-width:72px;border-radius:50%}
@@ -479,7 +479,7 @@ body:not(.timer-focus) main{overflow-anchor:none}
 <main>
 <section class="timer" aria-label="Tea timer">
 <div class="dial">
-<div class="tea-visual" aria-hidden="true"><video id="fillVideo" preload="auto" muted playsinline src="./fill_app.mp4"></video><video id="steepVideo" preload="auto" muted playsinline loop src="./steamLoop_app.mp4" hidden></video></div>
+<div class="tea-visual" aria-hidden="true"><video id="fillVideo" preload="auto" muted playsinline></video><video id="brewVideo" preload="auto" muted playsinline hidden></video><video id="steepVideo" preload="auto" muted playsinline loop hidden></video><video id="milkVideo" preload="auto" muted playsinline hidden></video></div>
 <div class="center">
 <div id="clock" class="clock" role="timer" aria-label="Time remaining">02:00</div>
 
@@ -706,42 +706,37 @@ const voice=new Audio("./tea-finished.mp3");
 voice.preload="auto";
 let chosen=2,total=120,remaining=120,deadline=0,running=false,finished=false,ticker=null;
 let warnedThirty=false;
-const fillVideo=$("fillVideo"),steepVideo=$("steepVideo");
-let fillCompleted=false,fillElapsed=0,fillDuration=5.08,fillStartedAt=0;
-function videoPause(){fillVideo.pause();steepVideo.pause();}
-function videoReset(){
- videoPause();fillCompleted=false;fillElapsed=0;fillStartedAt=0;
- steepVideo.classList.remove("visible");
- try{fillVideo.currentTime=0;steepVideo.currentTime=0;}catch(e){}
- fillVideo.hidden=false;steepVideo.hidden=true;
+const fillVideo=$("fillVideo"),brewVideo=$("brewVideo"),steepVideo=$("steepVideo"),milkVideo=$("milkVideo");
+const teaVideos=[fillVideo,brewVideo,steepVideo,milkVideo],teaBase="https://raw.githubusercontent.com/nielscookit/fancy-a-cuppa/kling-video-test/";
+[teaBase+"FIll.mp4",teaBase+"brew.mp4",teaBase+"still.mp4","./MILK.mp4"].forEach((src,i)=>{const v=teaVideos[i];v.src=src;v.muted=true;v.defaultMuted=true;v.preload="auto";v.load()});
+const pourAudio=new Audio("./BrewNEW2.mp3"),bubbleAudio=new Audio("./BlubbKlein.mp3"),milkAudio=new Audio("./BlubbMILCH.mp3");
+[pourAudio,bubbleAudio,milkAudio].forEach(a=>a.preload="auto");
+let teaPhase=0,teaToken=0,milkTriggered=false,milkSoundTimer=null,bubblePlayed=false,lastStillTime=0;
+function teaSound(a){a.pause();try{a.currentTime=0}catch(e){};a.play().catch(e=>console.warn("Tea sound",e))}
+function teaStopSounds(){[pourAudio,bubbleAudio,milkAudio].forEach(a=>{a.pause();try{a.currentTime=0}catch(e){}});clearTimeout(milkSoundTimer)}
+function videoPause(){teaVideos.forEach(v=>v.pause());teaStopSounds()}
+function videoReset(){++teaToken;videoPause();teaPhase=0;milkTriggered=false;bubblePlayed=false;lastStillTime=0;teaVideos.forEach((v,i)=>{v.classList.remove("visible");v.hidden=i!==0;try{v.currentTime=0}catch(e){}})}
+function teaReady(v){if(v.readyState>=2)return Promise.resolve();return new Promise((resolve,reject)=>{const ok=()=>{clean();resolve()},bad=()=>{clean();reject(new Error("Video load failed"))},clean=()=>{v.removeEventListener("loadeddata",ok);v.removeEventListener("error",bad)};v.addEventListener("loadeddata",ok,{once:true});v.addEventListener("error",bad,{once:true});v.load()})}
+async function teaShow(i){
+ if(!running)return;
+ const token=++teaToken,next=teaVideos[i],prev=teaVideos[teaPhase];
+ try{await teaReady(next);if(!running||token!==teaToken)return;
+ if(i!==teaPhase)next.currentTime=0;
+ next.hidden=false;next.classList.add("visible");next.play().catch(e=>console.warn("Video playback",e));
+ if(prev!==next){prev.classList.remove("visible");prev.hidden=true;prev.pause()}
+ teaPhase=i;
+ if(i===0)teaSound(pourAudio);
+ if(i===1)pourAudio.pause();
+ if(i===2){bubblePlayed=false;lastStillTime=0}
+ if(i===3){milkTriggered=true;bubbleAudio.pause();clearTimeout(milkSoundTimer);milkSoundTimer=setTimeout(()=>teaSound(milkAudio),60)}
+ }catch(e){console.warn("Video transition",e)}
 }
-function videoSync(){
- if(!running){videoPause();return;}
- if(!fillCompleted){
-  steepVideo.pause();steepVideo.classList.remove("visible");steepVideo.hidden=true;fillVideo.hidden=false;
-  if(fillVideo.paused)fillVideo.play().catch(err=>console.warn("Fill video:",err));
-  return;
- }
- // The steeping video plays continuously, rather than seeking on every timer tick.
- steepVideo.hidden=false;fillVideo.hidden=false;
- if(steepVideo.paused)steepVideo.play().catch(err=>console.warn("Steeping video:",err));
- requestAnimationFrame(()=>steepVideo.classList.add("visible"));
-}
-function syncFillSpeed(){
- // Keep the original filling movement; end the pouring sound when the fill ends.
- fillVideo.playbackRate=1;
- if(Number.isFinite(fillVideo.duration)&&fillVideo.duration>0)fillDuration=fillVideo.duration;
-}
-fillVideo.addEventListener("loadedmetadata",()=>{if(Number.isFinite(fillVideo.duration)&&fillVideo.duration>0)fillDuration=fillVideo.duration;syncFillSpeed();});
-replies.offer.addEventListener("loadedmetadata",syncFillSpeed);
-replies.offer.addEventListener("durationchange",syncFillSpeed);
-fillVideo.addEventListener("ended",()=>{
- fillCompleted=true;fillElapsed=fillDuration;
- replies.offer.pause();try{replies.offer.currentTime=0;}catch(e){}
- videoSync();
-});
-fillVideo.addEventListener("error",()=>console.warn("Please upload fill_app.mp4 to the repository root"));
-steepVideo.addEventListener("error",()=>console.warn("Could not load steamLoop_app.mp4"));
+function videoSync(){if(!running){videoPause();return}const v=teaVideos[teaPhase];v.hidden=false;v.classList.add("visible");v.play().catch(()=>{});if(teaPhase===0&&pourAudio.paused)teaSound(pourAudio)}
+fillVideo.addEventListener("ended",()=>{pourAudio.pause();if(running&&!milkTriggered)teaShow(1)});
+brewVideo.addEventListener("ended",()=>{if(running&&!milkTriggered)teaShow(2)});
+steepVideo.addEventListener("timeupdate",()=>{const t=steepVideo.currentTime;if(t<lastStillTime-.2)bubblePlayed=false;if(running&&teaPhase===2&&!milkTriggered&&!bubblePlayed&&t>=1.03){bubblePlayed=true;teaSound(bubbleAudio)}lastStillTime=t});
+teaVideos.forEach(v=>v.addEventListener("error",()=>console.warn("Tea video failed",v.currentSrc)));
+function unlockTeaAudio(){[bubbleAudio,milkAudio].forEach(a=>{a.muted=true;const p=a.play();if(p)p.then(()=>{a.pause();a.currentTime=0;a.muted=false}).catch(()=>{a.muted=false})})}
 function clock(sec){
 const n=Math.max(0,Math.ceil(sec));
 return String(Math.floor(n/60)).padStart(2,"0")+":"+String(n%60).padStart(2,"0");
@@ -801,12 +796,13 @@ function tick(){
 if(!running)return;
 remaining=Math.max(0,(deadline-Date.now())/1000);
 if(remaining<=0){
-stop();fillCompleted=true;steepVideo.hidden=false;steepVideo.classList.add("visible");remaining=0;finished=true;
+stop();remaining=0;finished=true;milkVideo.hidden=false;milkVideo.classList.add("visible");
 $("message").textContent="";
 draw();
 playVoice().catch(()=>{});
 return;
 }
+if(remaining<=5&&!milkTriggered){milkTriggered=true;teaShow(3)}
 if(!warnedThirty&&remaining<=30){
 warnedThirty=true;
 playAlmost();
@@ -814,22 +810,14 @@ playAlmost();
 draw();
 }
 $("start").addEventListener("click",()=>{
-
-if(running){tick();if(!running)return;if(!fillCompleted)fillElapsed=Math.min(fillDuration,fillElapsed+(Date.now()-fillStartedAt)/1000);stop();$("message").textContent="";draw();return;}
-if(finished){remaining=total;finished=false;warnedThirty=false;videoReset();}
-if(!fillCompleted){
- playReply("offer");
- // On resume, continue the pouring sound at the same position as the filling video.
- try{replies.offer.currentTime=Math.min(fillElapsed,Math.max(0,(replies.offer.duration||fillDuration)-0.05));}catch(e){}
-}
-if(clickContext&&clickContext.state!=="running")clickContext.resume().catch(()=>{});
-if(replies.almost.readyState===0)replies.almost.load();
-unlockVoice();
-running=true;deadline=Date.now()+remaining*1000;
-if(!fillCompleted){syncFillSpeed();fillStartedAt=Date.now();try{fillVideo.currentTime=Math.min(fillElapsed,Math.max(0,fillDuration-0.05));}catch(e){}}
-videoSync();
-$("message").textContent="";
-tick();ticker=setInterval(tick,200);requestWakeLock();
+ if(running){tick();if(!running)return;stop();$("message").textContent="";draw();return}
+ if(finished){remaining=total;finished=false;warnedThirty=false;videoReset()}
+ if(clickContext&&clickContext.state!=="running")clickContext.resume().catch(()=>{});
+ if(replies.almost.readyState===0)replies.almost.load();
+ unlockVoice();unlockTeaAudio();
+ running=true;deadline=Date.now()+remaining*1000;
+ if(remaining===total)teaShow(0);else videoSync();
+ $("message").textContent="";tick();ticker=setInterval(tick,100);requestWakeLock();
 });
 $("reset").addEventListener("click",reset);
 $("minus").addEventListener("click",()=>{playClick();setTime(chosen-1);});
