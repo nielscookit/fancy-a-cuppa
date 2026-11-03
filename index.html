@@ -726,6 +726,9 @@ function teaReady(v){
  });
 }
 let teaTransitioning=false;
+// Warm the video pipeline before the user presses Start.
+const teaPreload=Promise.all(teaVideos.map(teaReady));
+teaPreload.catch(e=>console.warn("Tea background preload",e));
 async function teaShow(i){
  if(!running&&!(i===3&&finished))return;
  if(teaTransitioning&&i!==3)return;
@@ -862,11 +865,24 @@ $("start").addEventListener("click",()=>{
  if(clickContext&&clickContext.state!=="running")clickContext.resume().catch(()=>{});
  if(replies.almost.readyState===0)replies.almost.load();
  unlockVoice();unlockTeaAudio();
- // Start the timer immediately; the videos were requested when the page loaded.
- running=true;deadline=Date.now()+remaining*1000;
- $("message").textContent="";
- if(remaining===total)teaShow(0);else videoSync();
- tick();ticker=setInterval(tick,100);requestWakeLock();
+ // Safari requires decoded video frames before beginning playback.
+ // Preload starts when the page opens; an early tap waits without advancing the countdown.
+ const startToken=++teaToken;
+ const begin=()=>{
+  if(startToken!==teaToken||running)return;
+  running=true;deadline=Date.now()+remaining*1000;
+  $("message").textContent="";
+  if(remaining===total)teaShow(0);else videoSync();
+  tick();ticker=setInterval(tick,100);requestWakeLock();
+ };
+ if(teaVideos.every(v=>v.readyState>=2))begin();
+ else{
+  $("message").textContent="Videos werden vorbereitet …";
+  Promise.all(teaVideos.map(teaReady)).then(begin).catch(e=>{
+   console.warn("Tea preload failed",e);
+   $("message").textContent="Video konnte nicht geladen werden.";
+  });
+ }
 });
 $("reset").addEventListener("click",reset);
 $("minus").addEventListener("click",()=>{playClick();setTime(chosen-1);});
