@@ -426,7 +426,7 @@ body.timer-focus .timer .clock{
   }
   body:not(.timer-focus) #doseContent:not([hidden]){
     /* Guarantee enough scroll range even before any tea details expand. */
-    min-height:calc(100dvh - 24px - env(safe-area-inset-top, 0px));
+    min-height:calc(100dvh + 160px);
     padding-bottom:24px;
   }
 }
@@ -592,6 +592,7 @@ $("doseToggle").addEventListener("click",()=>{
     toggle.setAttribute("aria-expanded","true");
     toggle.setAttribute("aria-pressed","true");
     requestAnimationFrame(()=>{
+      // Use the visible viewport top, not the layout viewport, on iOS Safari.
       const viewportOffset=window.visualViewport?window.visualViewport.offsetTop:0;
       const target=toggle.getBoundingClientRect().top+window.scrollY-viewportOffset-24;
       animateDoseScroll(target);
