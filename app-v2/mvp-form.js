@@ -54,7 +54,7 @@ function validate(p){
  if(d.subcategory==="other"&&!d.subcategory_other)fail("Other","Please specify the tea variety.");
  if(!Number.isFinite(d.qty)||d.qty<=0||d.qty>100)fail("Dose","Check tea quantity (0–100).");
  if(!Number.isInteger(d.base)||d.base<50||d.base>5000)fail("Base","Water quantity must be 50–5000 ml.");
- if(!Number.isFinite(d.mins)||d.mins<0.5||d.mins>30)fail("Min","Brewing time must be 0.5–30 minutes.");
+ if(!Number.isInteger(d.mins)||d.mins<1||d.mins>30)fail("Min","Brewing time must be 1–30 whole minutes.");
  if(d.temperature!==null&&(!Number.isInteger(d.temperature)||d.temperature<40||d.temperature>100))fail("Temp","Temperature must be 40–100 °C.");
  if((d.type==="bag")!==(d.unit==="bag"))fail("Unit","Choose a suitable unit for tea format.");
  return d;
