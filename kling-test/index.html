@@ -1,15 +1,18 @@
 <!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#faf9f6"><title>Fancy a Cuppa — Kling Test</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#faf9f6;color:#222;font-family:Arial,system-ui,sans-serif}main{max-width:480px;min-height:100dvh;margin:auto;padding:20px 20px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column}header{font-size:13px;color:#777;letter-spacing:.08em;text-transform:uppercase}h1{font-size:24px;margin:8px 0 6px}p{line-height:1.4}.screen{flex:1;display:flex;align-items:center;justify-content:center;min-height:280px}.video-stage{position:relative;width:100%;aspect-ratio:1;overflow:hidden;-webkit-mask-image:radial-gradient(circle closest-side at center,#000 68%,rgba(0,0,0,.92) 77%,rgba(0,0,0,.5) 88%,transparent 100%);mask-image:radial-gradient(circle closest-side at center,#000 68%,rgba(0,0,0,.92) 77%,rgba(0,0,0,.5) 88%,transparent 100%)}video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;visibility:hidden}video.active{opacity:1;visibility:visible}#status{font-size:14px;color:#666;min-height:40px;text-align:center}.actions{display:grid;gap:12px}button{min-height:66px;border:0;border-radius:6px;background:#76233c;color:#fff;font-size:18px;font-weight:700;cursor:pointer}button.secondary{background:#252525}button:disabled{opacity:.5}.note{font-size:12px;color:#777;margin-top:16px}
-</style></head><body><main><header>Fancy a Cuppa · Testversion</header><h1>Kling-Videotest</h1><div class="screen"><div class="video-stage"><video id="clip0" playsinline muted preload="auto"></video><video id="clip1" playsinline muted preload="auto"></video><video id="clip2" playsinline muted preload="auto" loop></video></div></div><p id="status" role="status">Bereit: Einfüllen → Teeziehen → Idle-Loop</p><div class="actions"><button id="start">TEST STARTEN</button><button class="secondary" id="reset">ZURÜCKSETZEN</button></div><p class="note">Separater Videotest. Die produktive Timer-App bleibt unverändert. Videos werden stumm abgespielt.</p></main>
+*{box-sizing:border-box}body{margin:0;background:#faf9f6;color:#222;font-family:Arial,system-ui,sans-serif}main{max-width:480px;min-height:100dvh;margin:auto;padding:20px 20px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column}header{font-size:13px;color:#777;letter-spacing:.08em;text-transform:uppercase}h1{font-size:24px;margin:8px 0 6px}p{line-height:1.4}.screen{flex:1;display:flex;align-items:center;justify-content:center;min-height:280px}.video-stage{position:relative;width:100%;aspect-ratio:1;overflow:hidden;-webkit-mask-image:radial-gradient(circle closest-side at center,#000 68%,rgba(0,0,0,.92) 77%,rgba(0,0,0,.5) 88%,transparent 100%);mask-image:radial-gradient(circle closest-side at center,#000 68%,rgba(0,0,0,.92) 77%,rgba(0,0,0,.5) 88%,transparent 100%)}video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;visibility:hidden}video.active{opacity:1;visibility:visible}#countdown{font-size:32px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;margin:0 0 8px}#status{font-size:14px;color:#666;min-height:40px;text-align:center}.actions{display:grid;gap:12px}button{min-height:66px;border:0;border-radius:6px;background:#76233c;color:#fff;font-size:18px;font-weight:700;cursor:pointer}button.secondary{background:#252525}button:disabled{opacity:.5}.note{font-size:12px;color:#777;margin-top:16px}
+</style></head><body><main><header>Fancy a Cuppa · Testversion</header><h1>Kling-Videotest</h1><div class="screen"><div class="video-stage"><video id="clip0" playsinline muted preload="auto"></video><video id="clip1" playsinline muted preload="auto"></video><video id="clip2" playsinline muted preload="auto" loop></video><video id="clip3" playsinline muted preload="auto"></video></div></div><p id="countdown">00:40</p><p id="status" role="status">Bereit: Einfüllen → Teeziehen → Loop → Milch</p><div class="actions"><button id="start">TEST STARTEN</button><button class="secondary" id="reset">ZURÜCKSETZEN</button></div><p class="note">Separater Videotest. Die produktive Timer-App bleibt unverändert. Videos werden stumm abgespielt.</p></main>
 <script>
 const base="https://raw.githubusercontent.com/nielscookit/fancy-a-cuppa/kling-video-test/";
-const clips=[base+"FIll.mp4",base+"brew.mp4",base+"still.mp4"];
-const names=["Einfüllen","Teeziehen","Idle-Loop"];
-const videos=[0,1,2].map(i=>document.getElementById("clip"+i));
+const clips=[base+"FIll.mp4",base+"brew.mp4",base+"still.mp4","../MILK.mp4"];
+const names=["Einfüllen","Teeziehen","Idle-Loop","Milch eingießen"];
+const videos=[0,1,2,3].map(i=>document.getElementById("clip"+i));
 const status=document.getElementById("status"),start=document.getElementById("start");
 const pourSound=new Audio("../BrewKurz.mp3");pourSound.preload="auto";
+const countdown=document.getElementById("countdown");
+const TEST_SECONDS=40;
+let deadline=0,timer=null,milkTriggered=false;
 let phase=-1,active=false,transitioning=false;
 videos.forEach((v,i)=>{v.src=clips[i];v.muted=true;v.defaultMuted=true;v.preload="auto";v.load();v.addEventListener("error",()=>{if(active&&phase===i)status.textContent="Video konnte nicht geladen werden.";});});
 function ready(v){return v.readyState>=2;}
@@ -17,7 +20,7 @@ function waitReady(v){if(ready(v))return Promise.resolve();return new Promise((r
 async function show(i){
  if(!active||transitioning)return;transitioning=true;
  const next=videos[i],previous=phase>=0?videos[phase]:null;
- status.textContent=names[i]+(i===2?" · wiederholt sich bis zum Stoppen":" · läuft einmal");
+ status.textContent=names[i]+(i===2?" · wiederholt sich bis 5 Sekunden vor Schluss":" · läuft einmal");
  try{
   await waitReady(next);
   if(!active){transitioning=false;return;}
@@ -34,15 +37,25 @@ async function show(i){
  transitioning=false;
 }
 videos[0].addEventListener("ended",()=>{pourSound.pause();try{pourSound.currentTime=0}catch(e){};if(active)show(1)});
-videos[1].addEventListener("ended",()=>{if(active)show(2)});
+videos[1].addEventListener("ended",()=>{if(active&&!milkTriggered)show(2)});
+function updateCountdown(){
+ if(!active)return;
+ const left=Math.max(0,(deadline-performance.now())/1000);
+ const sec=Math.ceil(left);
+ countdown.textContent="00:"+String(sec).padStart(2,"0");
+ if(left<=5&&!milkTriggered){milkTriggered=true;show(3);}
+ if(left<=0){clearInterval(timer);timer=null;active=false;videos.forEach(v=>v.pause());pourSound.pause();status.textContent="Timer abgelaufen · Milchvideo abgeschlossen";start.disabled=false;}
+}
+
 start.addEventListener("click",async()=>{
- if(active)return;active=true;start.disabled=true;
+ if(active)return;clearInterval(timer);videos.forEach(v=>{v.pause();v.classList.remove("active");try{v.currentTime=0}catch(e){}});phase=-1;transitioning=false;active=true;start.disabled=true;
  status.textContent="Videos werden vorbereitet …";
- try{await Promise.all(videos.map(waitReady));if(active)show(0);}
+ try{await Promise.all(videos.map(waitReady));if(active){milkTriggered=false;deadline=performance.now()+TEST_SECONDS*1000;timer=setInterval(updateCountdown,100);updateCountdown();show(0);}}
  catch(e){status.textContent="Ladefehler: "+e.message;active=false;start.disabled=false;}
 });
 document.getElementById("reset").addEventListener("click",()=>{
  active=false;transitioning=false;phase=-1;
+ clearInterval(timer);timer=null;milkTriggered=false;countdown.textContent="00:40";
  pourSound.pause();try{pourSound.currentTime=0}catch(e){};
  videos.forEach(v=>{v.pause();v.classList.remove("active");try{v.currentTime=0}catch(e){}});
  start.disabled=false;status.textContent="Bereit: Einfüllen → Teeziehen → Idle-Loop";
