@@ -254,6 +254,7 @@ body.timer-focus .timer .tea-visual{display:block;width:min(330px,100%);aspect-r
 .tea-visual video{background:transparent}
 .tea-visual video{visibility:hidden;opacity:0}
 .tea-visual video.visible{visibility:visible;opacity:1}
+.tea-visual video#milkVideo.visible{z-index:4}
 body.timer-focus .timer .clock{font-size:clamp(42px,11vw,58px)}
 .timer > .stepper{margin:28px 0 24px;gap:18px}
 .timer > .stepper .round{width:72px;height:72px;min-width:72px;border-radius:50%}
@@ -718,27 +719,30 @@ function videoPause(){teaVideos.forEach(v=>v.pause());teaStopSounds()}
 function videoReset(){++teaToken;videoPause();teaPhase=0;milkTriggered=false;bubblePlayed=false;lastStillTime=0;teaVideos.forEach((v,i)=>{v.classList.remove("visible");v.hidden=i!==0;try{v.currentTime=0}catch(e){}})}
 function teaReady(v){if(v.readyState>=2)return Promise.resolve();return new Promise((resolve,reject)=>{const ok=()=>{clean();resolve()},bad=()=>{clean();reject(new Error("Video load failed"))},clean=()=>{v.removeEventListener("loadeddata",ok);v.removeEventListener("error",bad)};v.addEventListener("loadeddata",ok,{once:true});v.addEventListener("error",bad,{once:true});v.load()})}
 async function teaShow(i){
- if(!running)return;
+ if(!running&&!(i===3&&finished))return;
  const token=++teaToken,next=teaVideos[i],prev=teaVideos[teaPhase];
- try{await teaReady(next);if((!running&&!(i===3&&finished))||token!==teaToken)return;
- if(i!==teaPhase)next.currentTime=0;
- // Wait for a rendered frame, not just a resolved play promise.
- next.hidden=false;
  try{
-   await next.play();
-   if(next.requestVideoFrameCallback){
-     await Promise.race([new Promise(resolve=>next.requestVideoFrameCallback(()=>resolve())),new Promise(resolve=>setTimeout(resolve,350))]);
-   }
- }catch(e){console.warn("Video playback",e);return}
- if((!running&&!(i===3&&finished))||token!==teaToken){next.pause();return}
- next.classList.add("visible");
- if(prev!==next){prev.classList.remove("visible");prev.hidden=true;prev.pause()}
- teaPhase=i;
- if(i===0)teaSound(pourAudio);
- if(i===1)pourAudio.pause();
- if(i===2&&!bubblePlayed){bubblePlayed=true;clearTimeout(bubbleTimer);bubbleTimer=setTimeout(()=>{if(running&&teaPhase===2&&!milkTriggered)teaSound(bubbleAudio)},1030)}
- if(i===3){milkTriggered=true;clearTimeout(bubbleTimer);bubbleAudio.pause();clearTimeout(milkSoundTimer);milkSoundTimer=setTimeout(()=>{if(milkVideo&&!milkVideo.ended)teaSound(milkAudio)},60)}
- }catch(e){console.warn("Video transition",e)}
+  await teaReady(next);
+  if(token!==teaToken||(!running&&!(i===3&&finished)))return;
+  try{next.currentTime=0}catch(e){}
+  // Match the proven test: start incoming video without awaiting play().
+  next.hidden=false;
+  next.classList.add("visible");
+  next.play().catch(e=>console.warn("Tea video play failed",i,e));
+  if(prev!==next){prev.classList.remove("visible");prev.hidden=true;prev.pause()}
+  teaPhase=i;
+  if(i===0)teaSound(pourAudio);
+  if(i===1)pourAudio.pause();
+  if(i===2&&!bubblePlayed){
+   bubblePlayed=true;clearTimeout(bubbleTimer);
+   bubbleTimer=setTimeout(()=>{if(running&&teaPhase===2&&!milkTriggered)teaSound(bubbleAudio)},1030);
+  }
+  if(i===3){
+   milkTriggered=true;clearTimeout(bubbleTimer);bubbleAudio.pause();
+   clearTimeout(milkSoundTimer);
+   milkSoundTimer=setTimeout(()=>teaSound(milkAudio),60);
+  }
+ }catch(e){console.warn("Tea video transition failed",i,e)}
 }
 function videoSync(){if(!running){videoPause();return}const v=teaVideos[teaPhase];v.hidden=false;v.classList.add("visible");v.play().catch(()=>{});if(teaPhase===0&&pourAudio.paused)teaSound(pourAudio)}
 fillVideo.addEventListener("ended",()=>{pourAudio.pause();if(running&&!milkTriggered)teaShow(1)});
@@ -813,8 +817,12 @@ if(remaining<=0){
 clearTicker();running=false;remaining=0;finished=true;releaseWakeLock();
 pourAudio.pause();bubbleAudio.pause();
 if(milkTriggered){
- // Do not interrupt the pending asynchronous milk transition at 00:00.
- if(teaPhase===3){milkVideo.hidden=false;milkVideo.classList.add("visible");}
+ // Preserve the milk video and its final frame after 00:00.
+ milkVideo.hidden=false;
+ milkVideo.classList.add("visible");
+ steepVideo.classList.remove("visible");
+ brewVideo.classList.remove("visible");
+ fillVideo.classList.remove("visible");
 }else{
  videoPause();
 }
