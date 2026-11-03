@@ -621,6 +621,41 @@ button.round,
  border-radius:6px!important;
 }
 #freeFields .fc-dropdown-trigger,#scanReview .fc-dropdown-trigger{width:100%!important;border-radius:6px!important}
+
+/* Adaptive dropdown portal: same field width and 6px corners, even above the field. */
+body > .fc-dropdown-menu{
+ box-sizing:border-box;
+ position:fixed!important;
+ overflow-y:auto;
+ -webkit-overflow-scrolling:touch;
+ background:#fff;
+ border:1px solid #e4e0da;
+ border-radius:6px!important;
+ padding:4px;
+ box-shadow:0 8px 22px rgba(0,0,0,.13);
+}
+body > .fc-dropdown-menu .fc-dropdown-option{
+ display:block;
+ box-sizing:border-box;
+ width:100%;
+ height:48px!important;
+ min-height:48px!important;
+ max-height:48px!important;
+ padding:0 10px!important;
+ text-align:left;
+ border:0;
+ border-radius:6px!important;
+ background:transparent;
+ color:#292929;
+ font-family:"Roboto",Arial,sans-serif;
+ font-size:16px!important;
+ font-weight:500!important;
+ overflow:hidden;
+ white-space:nowrap;
+ text-overflow:ellipsis;
+}
+body > .fc-dropdown-menu .fc-dropdown-option[aria-selected="true"]{background:#ecebea!important}
+body > .fc-dropdown-menu .fc-dropdown-option:focus-visible{outline:2px solid #792b40;outline-offset:-2px}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400,0..1,0" rel="stylesheet">
 </head>
@@ -730,7 +765,7 @@ button.round,
 <script src="./cloud.js?v=mvp20261103"></script>
 <script src="./barcode.js?v=mvp20261103"></script>
 <script src="./mvp-form.js?v=mvp20261103"></script>
-<script src="./form-dropdown.js?v=flyout-label-fix-20261103"></script>
+<script src="./form-dropdown.js?v=flyout-adaptive-20261103"></script>
 <script>
 (()=>{
 "use strict";
