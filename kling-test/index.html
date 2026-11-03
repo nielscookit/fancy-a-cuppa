@@ -11,11 +11,18 @@ const videos=[0,1,2,3].map(i=>document.getElementById("clip"+i));
 const status=document.getElementById("status"),start=document.getElementById("start");
 const pourSound=new Audio("../BrewNEW2.mp3");pourSound.preload="auto";
 const bubbleSound=new Audio("../BlubbKlein.mp3");bubbleSound.preload="auto";
+const milkSound=new Audio("../BlubbMILCH.mp3");milkSound.preload="auto";
+const MILK_SOUND_OFFSET=0.06;
+let milkSoundTriggered=false;
 const countdown=document.getElementById("countdown");
 const TEST_SECONDS=35;
 let deadline=0,timer=null,milkTriggered=false,milkDone=false;
 let phase=-1,active=false,transitioning=false;
 let bubblePlayed=false,lastStillTime=0;
+videos[3].addEventListener("timeupdate",()=>{
+ if(!active||phase!==3||milkSoundTriggered||videos[3].currentTime<MILK_SOUND_OFFSET)return;
+ milkSoundTriggered=true;milkSound.currentTime=0;milkSound.play().catch(()=>{});
+});
 const BUBBLE_AT=1.03;
 videos[2].addEventListener("timeupdate",()=>{
  const v=videos[2],t=v.currentTime;
@@ -37,6 +44,7 @@ async function show(i){
   if(!active){transitioning=false;return;}
   next.currentTime=0;
   if(i===2){bubblePlayed=false;lastStillTime=0;}
+  if(i===3){milkSoundTriggered=false;milkSound.pause();milkSound.currentTime=0;}
   // Start the incoming clip before removing the outgoing last frame.
   next.classList.add("active");
   const playPromise=next.play();
@@ -71,6 +79,7 @@ document.getElementById("reset").addEventListener("click",()=>{
  clearInterval(timer);timer=null;milkTriggered=false;countdown.textContent="00:35";
  pourSound.pause();try{pourSound.currentTime=0}catch(e){};
  bubbleSound.pause();try{bubbleSound.currentTime=0}catch(e){};bubblePlayed=false;lastStillTime=0;
+ milkSound.pause();try{milkSound.currentTime=0}catch(e){};milkSoundTriggered=false;
  videos.forEach(v=>{v.pause();v.classList.remove("active");try{v.currentTime=0}catch(e){}});
  start.disabled=false;status.textContent="Bereit: Einfüllen → Teeziehen → Idle-Loop";
 });
