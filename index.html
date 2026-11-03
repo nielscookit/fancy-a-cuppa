@@ -716,7 +716,7 @@ let teaPhase=0,teaToken=0,milkTriggered=false,milkSoundTimer=null,bubbleTimer=nu
 function teaSound(a){a.muted=false;a.pause();try{a.currentTime=0}catch(e){};a.play().catch(e=>console.warn("Tea sound",e))}
 function teaStopSounds(){[pourAudio,bubbleAudio,milkAudio].forEach(a=>{a.pause();try{a.currentTime=0}catch(e){}});clearTimeout(milkSoundTimer);clearTimeout(bubbleTimer)}
 function videoPause(){teaVideos.forEach(v=>v.pause());teaStopSounds()}
-function videoReset(){++teaToken;videoPause();teaPhase=0;teaTransitioning=false;milkTriggered=false;bubblePlayed=false;lastStillTime=0;teaVideos.forEach((v,i)=>{v.classList.remove("visible");v.hidden=false;v.style.removeProperty("display");v.style.removeProperty("visibility");v.style.removeProperty("opacity");v.style.removeProperty("z-index");try{v.currentTime=0}catch(e){}})}
+function videoReset(){++teaToken;videoPause();teaPhase=0;teaTransitioning=false;milkTriggered=false;bubblePlayed=false;lastStillTime=0;teaVideos.forEach((v,i)=>{v.classList.remove("visible");v.hidden=false;try{v.currentTime=0}catch(e){}})}
 function teaReady(v){
  if(v.readyState>=2)return Promise.resolve();
  return new Promise((resolve,reject)=>{
@@ -840,7 +840,6 @@ if(milkTriggered){
  // Preserve the milk video and its final frame after 00:00.
  milkVideo.hidden=false;
  milkVideo.classList.add("visible");
- milkVideo.style.display="block";milkVideo.style.visibility="visible";milkVideo.style.opacity="1";milkVideo.style.zIndex="10";
  steepVideo.classList.remove("visible");
  brewVideo.classList.remove("visible");
  fillVideo.classList.remove("visible");
@@ -861,7 +860,7 @@ draw();
 }
 $("start").addEventListener("click",()=>{
  if(running){tick();if(!running)return;stop();$("message").textContent="";draw();return}
- if(finished){remaining=total;finished=false;warnedThirty=false;videoReset()}
+ if(finished){videoReset();remaining=total;finished=false;warnedThirty=false;}
  if(clickContext&&clickContext.state!=="running")clickContext.resume().catch(()=>{});
  if(replies.almost.readyState===0)replies.almost.load();
  unlockVoice();unlockTeaAudio();
