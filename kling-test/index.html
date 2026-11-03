@@ -9,7 +9,7 @@ const clips=[base+"FIll.mp4",base+"brew.mp4",base+"still.mp4","../MILK.mp4"];
 const names=["Einfüllen","Teeziehen","Idle-Loop","Milch eingießen"];
 const videos=[0,1,2,3].map(i=>document.getElementById("clip"+i));
 const status=document.getElementById("status"),start=document.getElementById("start");
-const pourSound=new Audio("../BrewKurz.mp3");pourSound.preload="auto";
+const pourSound=new Audio("../BrewNEW.mp3");pourSound.preload="auto";
 const countdown=document.getElementById("countdown");
 const TEST_SECONDS=35;
 let deadline=0,timer=null,milkTriggered=false,milkDone=false;
