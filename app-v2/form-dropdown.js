@@ -47,6 +47,15 @@ function install(){
  for(const id of ids){
   const select=document.getElementById(id);
   if(!select||instances.has(id))continue;
+  // Do not leave the select inside a native <label>: iOS can forward taps to
+  // its hidden select and still open the system picker.
+  const parentLabel=select.closest("label");
+  if(parentLabel){
+    const field=document.createElement("div");
+    field.className="fc-form-field";
+    while(parentLabel.firstChild)field.appendChild(parentLabel.firstChild);
+    parentLabel.replaceWith(field);
+  }
   const wrapper=document.createElement("span");wrapper.className="fc-dropdown-wrap";
   select.parentNode.insertBefore(wrapper,select);
   wrapper.append(select);
@@ -55,7 +64,7 @@ function install(){
   trigger.className="fc-dropdown-trigger";
   trigger.setAttribute("aria-haspopup","listbox");
   trigger.setAttribute("aria-expanded","false");
-  const label=wrapper.closest("label")?.querySelector(".field-label")?.textContent||"Choose option";
+  const label=wrapper.closest(".fc-form-field")?.querySelector(".field-label")?.textContent||"Choose option";
   trigger.setAttribute("aria-label",label);
   const caption=document.createElement("span");caption.className="fc-dropdown-caption";
   const chevron=document.createElement("span");chevron.className="material-symbols-outlined";chevron.setAttribute("aria-hidden","true");
