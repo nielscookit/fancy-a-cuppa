@@ -925,6 +925,127 @@ let cloudTeas=[];
 try{const data=JSON.parse(localStorage.getItem("fancy-cuppa-teas-v1")||"[]");if(Array.isArray(data))saved=data.filter(t=>t&&typeof t.name==="string"&&["loose","bag"].includes(t.type)&&Number.isFinite(t.dose)&&t.dose>0&&Number.isFinite(t.min)&&t.min>=1);}catch(e){}
 let selectedTea="",volumeId="smallpot",brewMin=4;
 let editingTeaId=null;
+let searchMode=true;
+let formReturn=null;
+const recentKey="fancy-cuppa-recent-v1";
+let recentIds=[];
+try{const items=JSON.parse(localStorage.getItem(recentKey)||"[]");if(Array.isArray(items))recentIds=items.filter(x=>typeof x==="string").slice(0,5);}catch(e){}
+const categoryLabels={black:"Black Tea",green:"Green Tea",white:"White Tea",oolong:"Oolong",fruit:"Fruit Tea",herbal:"Herbal Tea",rooibos:"Rooibos",other:"Other",pu_erh:"Pu-erh"};
+const aliases=[
+ ["schwarztee","black"],["black tea","black"],["schwarzer tee","black"],
+ ["grüntee","green"],["grüner tee","green"],["gruen tee","green"],["green tea","green"],
+ ["weißtee","white"],["weisser tee","white"],["weißer tee","white"],["white tea","white"],
+ ["früchtetee","fruit"],["fruechtetee","fruit"],["fruit tea","fruit"],["fruchttee","fruit"],
+ ["kräutertee","herbal"],["kraeutertee","herbal"],["herbal tea","herbal"],["herb tea","herbal"],
+ ["oolong tea","oolong"],["rooibostee","rooibos"],["rooibos tea","rooibos"],
+ ["loser tee","loose"],["lose tee","loose"],["loose tea","loose"],["loose leaf","loose"],
+ ["teebeutel","bag"],["teebeuteln","bag"],["tea bags","bag"],["tea bag","bag"],["teabag","bag"],["bags","bag"]
+];
+function simplifySearch(s){return String(s||"").toLowerCase().replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim();}
+const normalizedAliases=aliases.map(([a,b])=>[simplifySearch(a),b]).sort((a,b)=>b[0].length-a[0].length);
+function canonicalSearch(s){
+ let out=" "+simplifySearch(s)+" ";
+ for(const [from,to] of normalizedAliases)out=out.replace(new RegExp(" "+from+" ","g")," "+to+" ");
+ return out.trim().replace(/\s+/g," ");
+}
+function allSearchTeas(){return [...cloudTeas,...saved,...builtins];}
+function matchTea(tea,query){
+ const tokens=canonicalSearch(query).split(" ").filter(Boolean);
+ const info=[tea.name,tea.brand,tea.rawName,tea.category,categoryLabels[tea.category],tea.subcategory,
+ tea.subcategory_other,tea.type==="bag"?"bag tea bag teebeutel":"loose loose tea loser tee"].filter(Boolean).join(" ");
+ const indexed=canonicalSearch(info);
+ return tokens.every(t=>indexed.includes(t));
+}
+function recentTea(tea){
+ if(!tea||tea.id==="free")return;
+ recentIds=[tea.id,...recentIds.filter(id=>id!==tea.id)].slice(0,5);
+ try{localStorage.setItem(recentKey,JSON.stringify(recentIds));}catch(e){}
+}
+function selectFromSearch(id){
+ const tea=allSearchTeas().find(t=>t.id===id);
+ if(!tea)return;
+ editingTeaId=null;
+ selectedTea=tea.id;searchMode=false;
+ $("teaSearch").value="";
+ brewMin=tea.min;recentTea(tea);
+ renderTeas();selectTea();
+}
+function renderSearchResults(){
+ const query=$("teaSearch").value.trim();
+ $("teaListHeading").textContent=query?"SEARCH RESULTS":"RECENTLY SEARCHED";
+ $("cancelTeaSearch").hidden=!selectedTea||selectedTea==="free";
+ const pool=allSearchTeas();
+ const rows=query?pool.filter(t=>matchTea(t,query)).slice(0,60):
+   recentIds.map(id=>pool.find(t=>t.id===id)).filter(Boolean);
+ const target=$("teaSearchResults");target.replaceChildren();
+ if(!rows.length){
+   const empty=document.createElement("p");empty.className="tea-search-empty";
+   empty.textContent=query?"No matching teas. Try another term or add a new tea.":"No recently selected teas.";
+   target.append(empty);return;
+ }
+ for(const tea of rows){
+   const button=document.createElement("button");button.type="button";button.className="tea-result";
+   const name=document.createElement("span");name.className="tea-result-name";name.textContent=tea.rawName||tea.name;
+   const meta=document.createElement("span");meta.className="tea-result-sub";
+   meta.textContent=[tea.brand&&tea.brand!=="Unbekannt"?tea.brand:null,
+     categoryLabels[tea.category]||null,
+     tea.subcategory&&tea.subcategory!=="other"?tea.subcategory:null,
+     tea.type==="bag"?"Tea bags":"Loose tea"].filter(Boolean).join(" · ");
+   button.append(name,meta);button.addEventListener("click",()=>selectFromSearch(tea.id));
+   target.append(button);
+ }
+}
+function renderTeaCard(){
+ const tea=activeTea();
+ if(!tea||selectedTea==="free")return;
+ $("selectedTeaTitle").textContent=tea.rawName||tea.name;
+ $("selectedTeaBrand").textContent=tea.brand&&tea.brand!=="Unbekannt"?tea.brand:"";
+ $("selectedTeaMeta").textContent=[
+  categoryLabels[tea.category]||null,
+  tea.subcategory==="other"?(tea.subcategory_other||null):tea.subcategory||null,
+  tea.type==="bag"?"Tea bags":"Loose tea"
+ ].filter(Boolean).join(" · ");
+}
+function renderSearchView(){
+ const inScan=!$("scanPanel").hidden;
+ const inForm=selectedTea==="free";
+ const showSearch=searchMode&&!inScan&&!inForm;
+ const showDetail=!searchMode&&!inScan&&!inForm&&!!selectedTea;
+ $("teaSearchHeader").hidden=inScan||inForm;
+ $("teaSearchMode").hidden=!showSearch;
+ $("teaDetails").hidden=!showDetail;
+ $("freeFields").hidden=!inForm||inScan;
+ $("editTea").hidden=!showDetail||!selectedTea.startsWith("cloud-");
+ if(showSearch)renderSearchResults();
+ if(showDetail)renderTeaCard();
+}
+function startSearchMode(){
+ if(selectedTea==="free"||!$("scanPanel").hidden)return;
+ searchMode=true;renderSearchView();
+}
+function restoreFormSelection(){
+ const v=formReturn;formReturn=null;editingTeaId=null;
+ selectedTea=v?.id||"";searchMode=v?.wasSearching??!selectedTea;
+ if(v){volumeId=v.volume;brewMin=v.minutes;$("customMl").value=v.custom;renderVolumes();}
+ renderTeas();syncCreationMode();if(selectedTea)renderDose();
+}
+function beginNewTea(){
+ formReturn={id:selectedTea,volume:volumeId,custom:$("customMl").value,minutes:brewMin,wasSearching:searchMode};
+ editingTeaId=null;selectedTea="free";searchMode=false;
+ FancyForm.fill("free",{name:"",brand:"",category:"",subcategory:"",type:"loose",unit:"tsp",base:250,mins:4});
+ renderTeas();syncCreationMode();$("freeFeedback").textContent="";$("freeName").focus();
+}
+$("teaSearch").addEventListener("focus",startSearchMode);
+$("teaSearch").addEventListener("input",()=>{startSearchMode();renderSearchResults();});
+$("cancelTeaSearch").addEventListener("click",()=>{
+ $("teaSearch").value="";searchMode=false;renderSearchView();
+});
+$("addTeaFromSearch").addEventListener("click",beginNewTea);
+$("removeTeaSelection").addEventListener("click",()=>{
+ selectedTea="";searchMode=true;$("teaSearch").value="";
+ renderTeas();syncCreationMode();$("teaSearch").focus();
+});
+
 function activeTea(){if(selectedTea==="free")return {name:$("freeName").value,type:$("freeType").value,dose:Number($("freeDose").value)*1000/Number($("freeBase").value),unit:$("freeUnit").value,min:Number($("freeMin").value)||brewMin};return [...builtins,...saved,...cloudTeas].find(t=>t.id===selectedTea)||null;}
 function selectedMl(){return volumeId==="custom"?Number($("customMl").value):volumeOptions.find(v=>v[0]===volumeId)[2];}
 function format(n){return n.toLocaleString("de-DE",{maximumFractionDigits:2});}
