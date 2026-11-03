@@ -1,21 +1,19 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Fancy a Cuppa — Kling video test</title>
 <style>body{margin:0;background:#faf9f6;color:#242424;font:16px system-ui}main{max-width:480px;margin:auto;padding:24px 18px}h1{font-size:25px}video{width:100%;aspect-ratio:1;object-fit:contain;border-radius:16px;background:#fff}label{display:block;margin:14px 0;font-size:14px}input{display:block;margin-top:6px;width:100%}button{border:0;border-radius:10px;background:#781d36;color:#fff;padding:16px;width:100%;font:600 17px system-ui;margin-top:14px}button:disabled{opacity:.4}small{color:#777}#status{min-height:45px}</style></head>
-<body><main><h1>Fancy a Cuppa · Kling test</h1><p>Three-phase video sequence. Select the silent MP4 files to test the exact cuts and looping on this device.</p>
+<body><main><h1>Fancy a Cuppa · Kling test</h1><p>Three-phase video sequence. The uploaded Kling videos play in sequence. Video tracks are muted in the browser.</p>
 <video id="screen" playsinline muted preload="auto"></video>
 <p id="status" role="status">Choose the three videos.</p>
-<label>1 · Filling <input id="fill" type="file" accept="video/mp4"></label>
-<label>2 · Brewing <input id="brew" type="file" accept="video/mp4"></label>
-<label>3 · Idle loop <input id="still" type="file" accept="video/mp4"></label>
+
 <button id="start">Play sequence</button><button id="stop">Stop</button>
-<p><small>Filling → brewing → idle (loop). Video audio is always muted. This preview is independent of the live app.</small></p></main>
+<p><small>FIll.mp4 → brew.mp4 → still.mp4 (loop). Video audio is muted. This preview is independent of the live app.</small></p></main>
 <script>
 const video=document.getElementById('screen'),status=document.getElementById('status');
-let urls=[],phase=-1,stopped=true;
+const urls=['./FIll.mp4','./brew.mp4','./still.mp4'];let phase=-1,stopped=true;
 const names=['Filling','Brewing','Idle loop'];
-function release(){urls.forEach(URL.revokeObjectURL);urls=[];}
-function playPhase(i){phase=i;video.loop=i===2;video.src=urls[i];status.textContent=names[i]+(i===2?' · repeating':' · once');video.play().catch(e=>status.textContent='Playback error: '+e.message);}
+
+function playPhase(i){phase=i;video.loop=i===2;video.src=urls[i];status.textContent=names[i]+(i===2?' · repeating':' · once');video.muted=true;video.play().catch(e=>status.textContent='Playback error: '+e.message);}
 video.addEventListener('ended',()=>{if(!stopped&&phase<2)playPhase(phase+1)});
-document.getElementById('start').onclick=()=>{const inputs=['fill','brew','still'].map(id=>document.getElementById(id));if(inputs.some(el=>!el.files.length)){status.textContent='Please select all three videos.';return;}video.pause();release();urls=inputs.map(el=>URL.createObjectURL(el.files[0]));stopped=false;playPhase(0)};
-document.getElementById('stop').onclick=()=>{stopped=true;video.pause();video.removeAttribute('src');video.load();release();status.textContent='Stopped.'};
+document.getElementById('start').onclick=()=>{video.pause();stopped=false;playPhase(0)};
+document.getElementById('stop').onclick=()=>{stopped=true;video.pause();video.removeAttribute('src');video.load();status.textContent='Stopped.'};
 </script></body></html>
