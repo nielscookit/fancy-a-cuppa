@@ -709,7 +709,7 @@ let chosen=2,total=120,remaining=120,deadline=0,running=false,finished=false,tic
 let warnedThirty=false;
 const fillVideo=$("fillVideo"),brewVideo=$("brewVideo"),steepVideo=$("steepVideo"),milkVideo=$("milkVideo");
 const teaVideos=[fillVideo,brewVideo,steepVideo,milkVideo];
-["./FIll.mp4","./brew.mp4","./still.mp4","./MILK.mp4"].forEach((src,i)=>{const v=teaVideos[i];v.src=src;v.muted=true;v.defaultMuted=true;v.preload="auto";v.setAttribute("playsinline","");v.load()});
+["./FIllSNB.mp4","./brewSNB.mp4","./stillSNB.mp4","./MILKSNB.mp4"].forEach((src,i)=>{const v=teaVideos[i];v.src=src;v.muted=true;v.defaultMuted=true;v.preload="auto";v.setAttribute("playsinline","");v.load()});
 const pourAudio=new Audio("./BrewNEW2.mp3"),bubbleAudio=new Audio("./BlubbKlein.mp3"),milkAudio=new Audio("./BlubbMILCH.mp3");
 [pourAudio,bubbleAudio,milkAudio].forEach(a=>a.preload="auto");
 let teaPhase=0,teaToken=0,milkTriggered=false,milkSoundTimer=null,bubbleTimer=null,bubblePlayed=false,lastStillTime=0;
