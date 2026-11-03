@@ -10,10 +10,19 @@ const names=["Einfüllen","Teeziehen","Idle-Loop","Milch eingießen"];
 const videos=[0,1,2,3].map(i=>document.getElementById("clip"+i));
 const status=document.getElementById("status"),start=document.getElementById("start");
 const pourSound=new Audio("../BrewNEW.mp3");pourSound.preload="auto";
+const bubbleSound=new Audio("../BlubbKlein.mp3");bubbleSound.preload="auto";
 const countdown=document.getElementById("countdown");
 const TEST_SECONDS=35;
 let deadline=0,timer=null,milkTriggered=false,milkDone=false;
 let phase=-1,active=false,transitioning=false;
+let bubblePlayed=false,lastStillTime=0;
+const BUBBLE_AT=1.03;
+videos[2].addEventListener("timeupdate",()=>{
+ const v=videos[2],t=v.currentTime;
+ if(t<lastStillTime-0.2)bubblePlayed=false;
+ if(active&&phase===2&&!bubblePlayed&&t>=BUBBLE_AT){bubblePlayed=true;try{bubbleSound.currentTime=0;bubbleSound.play().catch(()=>{})}catch(e){}}
+ lastStillTime=t;
+});
 videos.forEach((v,i)=>{v.src=clips[i];v.muted=true;v.defaultMuted=true;v.preload="auto";v.load();v.addEventListener("error",()=>{if(active&&phase===i)status.textContent="Video konnte nicht geladen werden.";});});
 function ready(v){return v.readyState>=2;}
 function waitReady(v){if(ready(v))return Promise.resolve();return new Promise((resolve,reject)=>{const done=()=>{cleanup();resolve()},fail=()=>{cleanup();reject(new Error("Video konnte nicht geladen werden"))},cleanup=()=>{v.removeEventListener("loadeddata",done);v.removeEventListener("error",fail)};v.addEventListener("loadeddata",done,{once:true});v.addEventListener("error",fail,{once:true});v.load();});}
@@ -27,6 +36,7 @@ async function show(i){
   await waitReady(next);
   if(!active){transitioning=false;return;}
   next.currentTime=0;
+  if(i===2){bubblePlayed=false;lastStillTime=0;}
   // Start the incoming clip before removing the outgoing last frame.
   next.classList.add("active");
   const playPromise=next.play();
@@ -60,6 +70,7 @@ document.getElementById("reset").addEventListener("click",()=>{
  active=false;transitioning=false;phase=-1;
  clearInterval(timer);timer=null;milkTriggered=false;countdown.textContent="00:35";
  pourSound.pause();try{pourSound.currentTime=0}catch(e){};
+ bubbleSound.pause();try{bubbleSound.currentTime=0}catch(e){};bubblePlayed=false;lastStillTime=0;
  videos.forEach(v=>{v.pause();v.classList.remove("active");try{v.currentTime=0}catch(e){}});
  start.disabled=false;status.textContent="Bereit: Einfüllen → Teeziehen → Idle-Loop";
 });
