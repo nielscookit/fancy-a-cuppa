@@ -36,7 +36,8 @@ async function scan(file){
  const reader=await load();
  const options={tryHarder:true,formats:["EAN13","EAN8","UPCA","QRCode"],maxNumberOfSymbols:5};
  let results=[];
- try{results=await reader.readBarcodes(file,options);}catch(firstError){
+ try{results=await reader.readBarcodes(file,options);}catch(firstError){results=[];}
+if(!results.length){
    // Canvas conversion helps with camera formats the decoder cannot read directly.
    const bitmap=await createImageBitmap(file);
    try{
@@ -50,5 +51,62 @@ async function scan(file){
  }
  return results.map(normalize).find(Boolean)||null;
 }
-window.FancyBarcode={scan};
+
+async function openCamera(onDetected,onPhoto){
+ if(!navigator.mediaDevices?.getUserMedia){onPhoto();return;}
+ const overlay=document.createElement("div");
+ overlay.setAttribute("role","dialog");overlay.setAttribute("aria-label","Barcode camera scanner");
+ Object.assign(overlay.style,{position:"fixed",inset:"0",zIndex:"9999",background:"#131313",display:"flex",
+ flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"14px",padding:"20px",
+ color:"#fff",fontFamily:"system-ui,sans-serif"});
+ const video=document.createElement("video");
+ video.setAttribute("playsinline","");video.setAttribute("webkit-playsinline","");
+ video.muted=true;video.autoplay=true;
+ Object.assign(video.style,{width:"100%",maxWidth:"560px",maxHeight:"65vh",objectFit:"cover",borderRadius:"14px"});
+ const status=document.createElement("p");status.textContent="Point the camera at the barcode or QR code.";
+ status.style.textAlign="center";
+ const controls=document.createElement("div");controls.style.cssText="display:flex;gap:12px;flex-wrap:wrap;justify-content:center";
+ const close=document.createElement("button");close.type="button";close.textContent="Close";
+ const photo=document.createElement("button");photo.type="button";photo.textContent="Take photo instead";
+ for(const btn of [close,photo])btn.style.cssText="border:1px solid #fff;border-radius:12px;padding:12px 18px;background:#fff;color:#222;font-size:16px";
+ controls.append(close,photo);overlay.append(video,status,controls);document.body.append(overlay);
+ let stream=null,running=true,busy=false,last=0,frame=0;
+ const canvas=document.createElement("canvas");const ctx=canvas.getContext("2d",{willReadFrequently:true});
+ const stop=()=>{
+  running=false;cancelAnimationFrame(frame);
+  if(stream)for(const track of stream.getTracks())track.stop();
+  video.srcObject=null;overlay.remove();
+ };
+ close.onclick=stop;
+ photo.onclick=()=>{stop();onPhoto();};
+ try{
+   const decoder=await load();
+   if(!running)return;
+   stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}}});
+   if(!running){for(const t of stream.getTracks())t.stop();return;}
+   video.srcObject=stream;await video.play();
+   const process=async(t)=>{
+     if(!running)return;
+     frame=requestAnimationFrame(process);
+     if(busy||t-last<500||video.readyState<2)return;
+     busy=true;last=t;
+     try{
+       const width=Math.min(1080,video.videoWidth||1080);
+       const height=Math.round(width*(video.videoHeight||720)/(video.videoWidth||1280));
+       canvas.width=width;canvas.height=height;
+       ctx.drawImage(video,0,0,width,height);
+       const result=await decoder.readBarcodes(ctx.getImageData(0,0,width,height),
+         {tryHarder:true,formats:["EAN13","EAN8","UPCA","QRCode"],maxNumberOfSymbols:3});
+       const code=result.map(normalize).find(Boolean);
+       if(code&&running){stop();onDetected(code);}
+     }catch(e){status.textContent="Scanning… Keep the barcode steady and well lit.";}
+     finally{busy=false;}
+   };
+   frame=requestAnimationFrame(process);
+ }catch(e){
+  status.textContent="Camera unavailable. Take a photo instead.";
+  console.warn("Live barcode scan",e);
+ }
+}
+window.FancyBarcode={scan,openCamera};
 })();
