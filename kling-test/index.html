@@ -5,7 +5,7 @@
 </style></head><body><main><header>Fancy a Cuppa · Testversion</header><h1>Kling-Videotest</h1><div class="screen"><div class="video-stage"><video id="clip0" playsinline muted preload="auto"></video><video id="clip1" playsinline muted preload="auto"></video><video id="clip2" playsinline muted preload="auto" loop></video><video id="clip3" playsinline muted preload="auto"></video></div></div><p id="countdown">00:35</p><p id="status" role="status">Bereit: Einfüllen → Teeziehen → Loop → Milch</p><div class="actions"><button id="start">TEST STARTEN</button><button class="secondary" id="reset">ZURÜCKSETZEN</button></div><p class="note">Separater Videotest. Die produktive Timer-App bleibt unverändert. Videos werden stumm abgespielt.</p></main>
 <script>
 const base="https://raw.githubusercontent.com/nielscookit/fancy-a-cuppa/kling-video-test/";
-const clips=[base+"FIll.mp4",base+"brew.mp4",base+"still.mp4","../MILK.mp4"];
+const clips=["../FIllSNB.mp4","../brewSNB.mp4","../stillSNB.mp4","../MILKSNB.mp4"];
 const names=["Einfüllen","Teeziehen","Idle-Loop","Milch eingießen"];
 const videos=[0,1,2,3].map(i=>document.getElementById("clip"+i));
 const status=document.getElementById("status"),start=document.getElementById("start");
