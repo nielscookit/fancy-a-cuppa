@@ -9,6 +9,7 @@ const clips=[base+"FIll.mp4",base+"brew.mp4",base+"still.mp4"];
 const names=["Einfüllen","Teeziehen","Idle-Loop"];
 const videos=[0,1,2].map(i=>document.getElementById("clip"+i));
 const status=document.getElementById("status"),start=document.getElementById("start");
+const pourSound=new Audio("../BrewKurz.mp3");pourSound.preload="auto";
 let phase=-1,active=false,transitioning=false;
 videos.forEach((v,i)=>{v.src=clips[i];v.muted=true;v.defaultMuted=true;v.preload="auto";v.load();v.addEventListener("error",()=>{if(active&&phase===i)status.textContent="Video konnte nicht geladen werden.";});});
 function ready(v){return v.readyState>=2;}
@@ -25,12 +26,14 @@ async function show(i){
   await next.play();
   if(!active){next.pause();transitioning=false;return;}
   next.classList.add("active");
+  if(i===0){try{pourSound.currentTime=0;await pourSound.play()}catch(e){console.warn("Pour sound:",e)}}
+  else{pourSound.pause();try{pourSound.currentTime=0}catch(e){}}
   if(previous&&previous!==next){previous.classList.remove("active");previous.pause();}
   phase=i;
  }catch(e){status.textContent="Video konnte nicht starten: "+e.message;start.disabled=false;}
  transitioning=false;
 }
-videos[0].addEventListener("ended",()=>{if(active)show(1)});
+videos[0].addEventListener("ended",()=>{pourSound.pause();try{pourSound.currentTime=0}catch(e){};if(active)show(1)});
 videos[1].addEventListener("ended",()=>{if(active)show(2)});
 start.addEventListener("click",async()=>{
  if(active)return;active=true;start.disabled=true;
@@ -40,6 +43,7 @@ start.addEventListener("click",async()=>{
 });
 document.getElementById("reset").addEventListener("click",()=>{
  active=false;transitioning=false;phase=-1;
+ pourSound.pause();try{pourSound.currentTime=0}catch(e){};
  videos.forEach(v=>{v.pause();v.classList.remove("active");try{v.currentTime=0}catch(e){}});
  start.disabled=false;status.textContent="Bereit: Einfüllen → Teeziehen → Idle-Loop";
 });
