@@ -720,7 +720,7 @@ function teaReady(v){if(v.readyState>=2)return Promise.resolve();return new Prom
 async function teaShow(i){
  if(!running)return;
  const token=++teaToken,next=teaVideos[i],prev=teaVideos[teaPhase];
- try{await teaReady(next);if(!running||token!==teaToken)return;
+ try{await teaReady(next);if((!running&&!(i===3&&finished))||token!==teaToken)return;
  if(i!==teaPhase)next.currentTime=0;
  // Wait for a rendered frame, not just a resolved play promise.
  next.hidden=false;
@@ -730,7 +730,7 @@ async function teaShow(i){
      await Promise.race([new Promise(resolve=>next.requestVideoFrameCallback(()=>resolve())),new Promise(resolve=>setTimeout(resolve,350))]);
    }
  }catch(e){console.warn("Video playback",e);return}
- if(!running||token!==teaToken){next.pause();return}
+ if((!running&&!(i===3&&finished))||token!==teaToken){next.pause();return}
  next.classList.add("visible");
  if(prev!==next){prev.classList.remove("visible");prev.hidden=true;prev.pause()}
  teaPhase=i;
@@ -813,8 +813,8 @@ if(remaining<=0){
 clearTicker();running=false;remaining=0;finished=true;releaseWakeLock();
 pourAudio.pause();bubbleAudio.pause();
 if(milkTriggered){
- milkVideo.hidden=false;milkVideo.classList.add("visible");
- if(milkVideo.paused&&!milkVideo.ended)milkVideo.play().catch(e=>console.warn("Milk finish",e));
+ // Do not interrupt the pending asynchronous milk transition at 00:00.
+ if(teaPhase===3){milkVideo.hidden=false;milkVideo.classList.add("visible");}
 }else{
  videoPause();
 }
