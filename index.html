@@ -716,43 +716,45 @@ let teaPhase=0,teaToken=0,milkTriggered=false,milkSoundTimer=null,bubbleTimer=nu
 function teaSound(a){a.pause();try{a.currentTime=0}catch(e){};a.play().catch(e=>console.warn("Tea sound",e))}
 function teaStopSounds(){[pourAudio,bubbleAudio,milkAudio].forEach(a=>{a.pause();try{a.currentTime=0}catch(e){}});clearTimeout(milkSoundTimer);clearTimeout(bubbleTimer)}
 function videoPause(){teaVideos.forEach(v=>v.pause());teaStopSounds()}
-function videoReset(){++teaToken;videoPause();teaPhase=0;milkTriggered=false;bubblePlayed=false;lastStillTime=0;teaVideos.forEach((v,i)=>{v.classList.remove("visible");v.hidden=false;v.style.removeProperty("display");v.style.removeProperty("visibility");v.style.removeProperty("opacity");v.style.removeProperty("z-index");try{v.currentTime=0}catch(e){}})}
-function teaReady(v){if(v.readyState>=2)return Promise.resolve();return new Promise((resolve,reject)=>{const ok=()=>{clean();resolve()},bad=()=>{clean();reject(new Error("Video load failed"))},clean=()=>{v.removeEventListener("loadeddata",ok);v.removeEventListener("error",bad)};v.addEventListener("loadeddata",ok,{once:true});v.addEventListener("error",bad,{once:true});v.load()})}
+function videoReset(){++teaToken;videoPause();teaPhase=0;teaTransitioning=false;milkTriggered=false;bubblePlayed=false;lastStillTime=0;teaVideos.forEach((v,i)=>{v.classList.remove("visible");v.hidden=false;v.style.removeProperty("display");v.style.removeProperty("visibility");v.style.removeProperty("opacity");v.style.removeProperty("z-index");try{v.currentTime=0}catch(e){}})}
+function teaReady(v){
+ if(v.readyState>=2)return Promise.resolve();
+ return new Promise((resolve,reject)=>{
+  const ok=()=>{clean();resolve()},bad=()=>{clean();reject(new Error("Video konnte nicht geladen werden: "+v.src))},
+  clean=()=>{v.removeEventListener("loadeddata",ok);v.removeEventListener("error",bad)};
+  v.addEventListener("loadeddata",ok,{once:true});v.addEventListener("error",bad,{once:true});v.load();
+ });
+}
+let teaTransitioning=false;
 async function teaShow(i){
  if(!running&&!(i===3&&finished))return;
+ if(teaTransitioning&&i!==3)return;
+ teaTransitioning=true;
  const token=++teaToken,next=teaVideos[i],prev=teaVideos[teaPhase];
  try{
-  // The milk transition is time-critical. Never block it on a network readiness event.
-  // Safari may ignore preload; the first video must start in the tap gesture.
-  // For the milk clip, wait for a decoded frame instead of playing a blank layer.
-  if(i===3)await teaReady(next);
+  // Same sequence as the working kling-test: await decoded data, activate, play, then hide previous.
+  await teaReady(next);
   if(token!==teaToken||(!running&&!(i===3&&finished)))return;
-  try{next.currentTime=0}catch(e){}
+  next.currentTime=0;
   next.hidden=false;
   next.classList.add("visible");
-  if(i===3){
-   // Immediately bring milk above every other layer, even while its first frame decodes.
-   next.style.display="block";
-   next.style.visibility="visible";
-   next.style.opacity="1";
-   next.style.zIndex="10";
-  }
-  const playPromise=next.play();
-  if(playPromise)playPromise.catch(e=>console.warn("Tea video play failed",i,e));
+  const p=next.play();
+  if(p)p.catch(e=>{$("message").textContent="Videowiedergabe: "+e.message;console.warn(e)});
   if(prev!==next){prev.classList.remove("visible");prev.pause()}
   teaPhase=i;
   if(i===0)teaSound(pourAudio);
-  if(i===1)pourAudio.pause();
+  else pourAudio.pause();
   if(i===2&&!bubblePlayed){
    bubblePlayed=true;clearTimeout(bubbleTimer);
    bubbleTimer=setTimeout(()=>{if(running&&teaPhase===2&&!milkTriggered)teaSound(bubbleAudio)},1030);
   }
   if(i===3){
-   milkTriggered=true;clearTimeout(bubbleTimer);bubbleAudio.pause();
+   clearTimeout(bubbleTimer);bubbleAudio.pause();
    clearTimeout(milkSoundTimer);
    milkSoundTimer=setTimeout(()=>teaSound(milkAudio),60);
   }
- }catch(e){console.warn("Tea video transition failed",i,e);$("message").textContent="Video "+(i+1)+" konnte auf diesem Gerät nicht geladen werden."}
+ }catch(e){console.warn("Tea video transition failed",i,e);$("message").textContent="Video konnte nicht geladen werden."}
+ finally{teaTransitioning=false}
 }
 function videoSync(){if(!running){videoPause();return}const v=teaVideos[teaPhase];v.hidden=false;v.classList.add("visible");v.play().catch(e=>console.warn("Tea resume failed",e));if(teaPhase===0&&pourAudio.paused)teaSound(pourAudio)}
 fillVideo.addEventListener("ended",()=>{pourAudio.pause();if(running&&!milkTriggered)teaShow(1)});
@@ -855,9 +857,16 @@ $("start").addEventListener("click",()=>{
  if(clickContext&&clickContext.state!=="running")clickContext.resume().catch(()=>{});
  if(replies.almost.readyState===0)replies.almost.load();
  unlockVoice();unlockTeaAudio();
- running=true;deadline=Date.now()+remaining*1000;
- if(remaining===total)teaShow(0);else videoSync();
- $("message").textContent="";tick();ticker=setInterval(tick,100);requestWakeLock();
+ // Match kling-test: preload and decode ALL clips before starting the countdown.
+ $("message").textContent="Videos werden vorbereitet …";
+ const startToken=++teaToken;
+ Promise.all(teaVideos.map(teaReady)).then(()=>{
+  if(startToken!==teaToken||running)return;
+  running=true;deadline=Date.now()+remaining*1000;
+  $("message").textContent="";
+  if(remaining===total)teaShow(0);else videoSync();
+  tick();ticker=setInterval(tick,100);requestWakeLock();
+ }).catch(e=>{console.warn("Tea preload failed",e);$("message").textContent="Video konnte nicht geladen werden.";});
 });
 $("reset").addEventListener("click",reset);
 $("minus").addEventListener("click",()=>{playClick();setTime(chosen-1);});
