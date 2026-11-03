@@ -37,7 +37,7 @@ async function save(data){
 }
 async function lookup(code){
 if(!code?.type||!code?.value)return null;
-const url=root+"/rest/v1/tea_codes?select=tea_id,teas(id,brand,name,category,tea_preparations(dose_teaspoons,dose_grams,dose_bags,dose_water_ml,brew_seconds))&code_type=eq."+encodeURIComponent(code.type)+"&code_value=eq."+encodeURIComponent(code.value)+"&limit=1";
+const url=root+"/rest/v1/tea_codes?select=tea_id,teas(id,brand,name,category,subcategory,subcategory_other,tea_preparations(dose_teaspoons,dose_grams,dose_bags,dose_measures,dose_water_ml,brew_seconds,water_temp_c))&code_type=eq."+encodeURIComponent(code.type)+"&code_value=eq."+encodeURIComponent(code.value)+"&limit=1";
 const response=await fetch(url,{headers:{apikey:key}});
 if(!response.ok)throw Error("Catalog lookup unavailable ("+response.status+")");
 const data=await response.json();
