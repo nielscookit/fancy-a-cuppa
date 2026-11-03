@@ -1055,6 +1055,7 @@ const placeholder=document.createElement("option");placeholder.value="";placehol
 [...builtins,...saved,...cloudTeas].forEach(t=>{const o=document.createElement("option");o.value=t.id;o.textContent=t.name;sel.append(o);});
 const free=document.createElement("option");free.value="free";free.textContent="Add a new tea";sel.append(free);sel.value=selectedTea;
 $("teaChosen").textContent=([ ...builtins,...saved,...cloudTeas].find(t=>t.id===selectedTea)||{name:selectedTea==="free"?"Add a new tea":"Choose your tea"}).name;
+renderSearchResults();
 }
 function renderTeaMenu(){
 const menu=$("teaMenu");menu.replaceChildren();
@@ -1104,21 +1105,19 @@ $("brewStart").disabled=!valid;
 
 }
 function syncCreationMode(){
-const editing=selectedTea==="free"||!$("scanPanel").hidden;
-$("editTea").hidden=!selectedTea||!selectedTea.startsWith("cloud-")||!$("scanPanel").hidden;
-document.querySelector(".tea-picker").hidden=!$("scanPanel").hidden;
-$("teaDetails").hidden=editing||!selectedTea;
-$("freeFields").hidden=selectedTea!=="free"||!$("scanPanel").hidden;
+ document.querySelector(".tea-picker").hidden=true;
+ renderSearchView();
 }
 function selectTea(){
-syncCreationMode();
-
-if(!selectedTea)return;
-if(selectedTea!=="free")brewMin=activeTea().min;else if(Number($("freeMin").value)>0)brewMin=Number($("freeMin").value);
-renderDose();
+ if(selectedTea&&selectedTea!=="free"&&$("scanPanel").hidden)searchMode=false;
+ syncCreationMode();
+ if(!selectedTea)return;
+ if(selectedTea!=="free")brewMin=activeTea()?.min||brewMin;
+ else if(Number($("freeMin").value)>0)brewMin=Number($("freeMin").value);
+ if(selectedTea!=="free")renderDose();
 }
-$("freeCancel").addEventListener("click",()=>{editingTeaId=null;selectedTea="";renderTeas();selectTea();$("freeFeedback").textContent="";});
-$("teaSelect").addEventListener("change",()=>{editingTeaId=null;selectedTea=$("teaSelect").value;selectTea();});
+$("freeCancel").addEventListener("click",()=>{restoreFormSelection();$("freeFeedback").textContent="";});
+$("teaSelect").addEventListener("change",()=>{editingTeaId=null;selectedTea=$("teaSelect").value;searchMode=!selectedTea;selectTea();});
 $("customMl").addEventListener("input",renderDose);
 $("brewMinus").addEventListener("click",()=>{playClick();brewMin=Math.max(1,brewMin-1);renderDose();});
 $("brewPlus").addEventListener("click",()=>{playClick();brewMin=Math.min(60,brewMin+1);renderDose();});
@@ -1136,6 +1135,7 @@ window.scrollTo({top:0,behavior:focusExperiment?"instant":"smooth"});
 $("editTea").addEventListener("click",()=>{
  const tea=cloudTeas.find(t=>t.id===selectedTea);
  if(!tea)return;
+ formReturn={id:selectedTea,volume:volumeId,custom:$("customMl").value,minutes:brewMin,wasSearching:false};
  editingTeaId=tea.id.slice(6);
  selectedTea="free";
  FancyForm.fill("free",{name:tea.rawName||tea.name,brand:tea.brand||"Unbekannt",
@@ -1156,9 +1156,9 @@ $("saveTea").addEventListener("click",async()=>{
   const rows=await FancyCloud.list();
   cloudTeas=rows;
   const tea=cloudTeas.find(t=>t.id==="cloud-"+result.id);
-  editingTeaId=null;
-  selectedTea=tea?tea.id:"";
-  if(tea)brewMin=tea.min;
+  editingTeaId=null;formReturn=null;
+  selectedTea=tea?tea.id:"";searchMode=!tea;
+  if(tea){brewMin=tea.min;recentTea(tea);}
   renderTeas();selectTea();
   $("freeFeedback").textContent="";
   $("brewMessage").textContent=result.updated?"Tea updated for everyone.":result.existing?"Tea already exists.":"Tea saved for everyone.";
@@ -1191,7 +1191,7 @@ try{
     const existing=await FancyCloud.lookup(code);
     if(existing){
       if(!cloudTeas.some(t=>t.id===existing.id))cloudTeas.push(existing);
-      selectedTea=existing.id;
+      selectedTea=existing.id;searchMode=false;recentTea(existing);
       brewMin=existing.min;
       renderTeas();
       $("scanPanel").hidden=true;
@@ -1224,7 +1224,7 @@ async function acceptLiveCode(code){
   const existing=await FancyCloud.lookup(code);
   if(existing){
    if(!cloudTeas.some(t=>t.id===existing.id))cloudTeas.push(existing);
-   selectedTea=existing.id;brewMin=existing.min;
+   selectedTea=existing.id;searchMode=false;recentTea(existing);brewMin=existing.min;
    renderTeas();$("scanPanel").hidden=true;syncCreationMode();selectTea();
    $("brewMessage").textContent="Tea found in shared catalog.";
    return;
@@ -1374,7 +1374,7 @@ $("scanSave").addEventListener("click",async()=>{
   const rows=await FancyCloud.list();
   cloudTeas=rows;
   const tea=cloudTeas.find(t=>t.id==="cloud-"+result.id);
-  if(tea){selectedTea=tea.id;brewMin=tea.min;renderTeas();selectTea();}
+  if(tea){selectedTea=tea.id;searchMode=false;brewMin=tea.min;recentTea(tea);renderTeas();selectTea();}
   $("scanPanel").hidden=true;syncCreationMode();
   $("brewMessage").textContent=result.existing?"Tea already exists.":"Tea saved for everyone.";
   scanProductCode=null;
