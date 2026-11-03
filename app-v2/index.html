@@ -1096,7 +1096,7 @@ requestAnimationFrame(()=>{$("teaTrigger").scrollIntoView({behavior:"instant",bl
 });
 
 renderTeas();renderVolumes();selectTea();updateScanUnits();
-FancyCloud.list().then(rows=>{cloudTeas=rows.filter(t=>!saved.some(v=>v.name===t.name&&v.unit===t.unit));renderTeas();}).catch(e=>console.warn("Community teas unavailable",e));
+if(window.FancyCloud)FancyCloud.list().then(rows=>{cloudTeas=rows.filter(t=>!saved.some(v=>v.name===t.name&&v.unit===t.unit));renderTeas();}).catch(e=>console.warn("Community teas unavailable",e));
 draw();
 teaPlayer.prepare().catch(e=>console.warn("Video preload",e));
 })();
