@@ -9,7 +9,7 @@
 <title>Fancy a Cuppa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{font-family:"Roboto Mono",monospace;color:#1d1d1d;background:#faf9f6;font-size:13px}
 *{box-sizing:border-box}
@@ -510,6 +510,72 @@ html,body{touch-action:manipulation}
 button,a,label,input,select,textarea{touch-action:manipulation}
 input:not([type="file"]),select,textarea{font-size:16px!important}
 .tea-search-field input{font-size:16px!important}
+
+/* Fancy a Cuppa V2 — unified controls, 2026-11-03 */
+button:not([hidden]) {
+  height:66px!important;
+  min-height:66px!important;
+  box-sizing:border-box;
+}
+button.round,
+.timer > .stepper button.round,
+.brew-step .stepper button.round {
+  width:66px!important;
+  min-width:66px!important;
+  height:66px!important;
+  min-height:66px!important;
+  padding:0!important;
+}
+.tea-search-header{align-items:center}
+.tea-search-scan{flex:0 0 66px!important;width:66px!important}
+.tea-result{display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.tea-result-name,.tea-result-sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+#freeFields .field-label,
+#scanReview .field-label,
+#freeFields input,
+#scanReview input,
+#freeFields select,
+#scanReview select {
+  font-family:"Roboto",Arial,sans-serif!important;
+  font-size:16px!important;
+  font-weight:500!important;
+}
+#freeFields .field-label,#scanReview .field-label{
+  line-height:20px;
+}
+#freeFields input:not([type="file"]),
+#scanReview input:not([type="file"]),
+#freeFields select,
+#scanReview select,
+.tea-search-field input{
+  height:48px!important;
+  min-height:48px!important;
+  max-height:48px!important;
+  box-sizing:border-box;
+}
+#freeFields select,#scanReview select{
+  appearance:none!important;
+  -webkit-appearance:none!important;
+  padding-right:46px!important;
+}
+#freeFields label:has(> select),
+#scanReview label:has(> select){position:relative}
+#freeFields label:has(> select)::after,
+#scanReview label:has(> select)::after{
+  content:"keyboard_arrow_down";
+  font-family:"Material Symbols Outlined";
+  font-weight:400;
+  font-style:normal;
+  font-size:28px;
+  line-height:28px;
+  font-feature-settings:"liga";
+  -webkit-font-feature-settings:"liga";
+  position:absolute;
+  right:12px;
+  bottom:10px;
+  color:#333;
+  pointer-events:none;
+}
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24..48,400,0..1,0" rel="stylesheet">
 </head>
