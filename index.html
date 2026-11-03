@@ -734,7 +734,7 @@ async function teaShow(i){
 function videoSync(){if(!running){videoPause();return}const v=teaVideos[teaPhase];v.hidden=false;v.classList.add("visible");v.play().catch(()=>{});if(teaPhase===0&&pourAudio.paused)teaSound(pourAudio)}
 fillVideo.addEventListener("ended",()=>{pourAudio.pause();if(running&&!milkTriggered)teaShow(1)});
 brewVideo.addEventListener("ended",()=>{if(running&&!milkTriggered)teaShow(2)});
-steepVideo.addEventListener("timeupdate",()=>{const t=steepVideo.currentTime;if(t<lastStillTime-.2)bubblePlayed=false;if(running&&teaPhase===2&&!milkTriggered&&!bubblePlayed&&t>=1.03){bubblePlayed=true;teaSound(bubbleAudio)}lastStillTime=t});
+steepVideo.addEventListener("timeupdate",()=>{const t=steepVideo.currentTime;// Keep bubblePlayed true across subsequent idle-loop repetitions.if(running&&teaPhase===2&&!milkTriggered&&!bubblePlayed&&t>=1.03){bubblePlayed=true;teaSound(bubbleAudio)}lastStillTime=t});
 teaVideos.forEach(v=>v.addEventListener("error",()=>console.warn("Tea video failed",v.currentSrc)));
 function unlockTeaAudio(){[bubbleAudio,milkAudio].forEach(a=>{a.muted=true;const p=a.play();if(p)p.then(()=>{a.pause();a.currentTime=0;a.muted=false}).catch(()=>{a.muted=false})})}
 function clock(sec){
