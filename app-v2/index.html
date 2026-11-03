@@ -555,6 +555,7 @@ body:not(.timer-focus) main{overflow-anchor:none}
 
 </main>
 <script src="./cloud.js"></script>
+<script src="./barcode.js"></script>
 <script>
 (()=>{
 "use strict";
@@ -967,16 +968,47 @@ saved=next;selectedTea=tea.id;brewMin=mins;renderTeas();selectTea();$("brewMessa
 });
 let scanObjectUrl=null;
 let scanFile=null;
+let scanProductCode=null;
 
-
-function acceptScan(file){
+async function acceptScan(file){
 if(!file)return;
 scanFile=file;
+scanProductCode=null;
 $("scanPanel").hidden=false;
 syncCreationMode();
 $("scanReview").hidden=false;
 $("scanFeedback").textContent="";
-performScan();
+$("scanStatus").hidden=false;
+$("scanStatus").textContent="Reading barcode…";
+let scanError=null;
+try{
+  const code=await FancyBarcode.scan(file);
+  if(code){
+    scanProductCode=code;
+    $("scanStatus").textContent="Barcode recognized. Checking shared catalog…";
+    const existing=await FancyCloud.lookup(code);
+    if(existing){
+      if(!cloudTeas.some(t=>t.id===existing.id))cloudTeas.push(existing);
+      selectedTea=existing.id;
+      brewMin=existing.min;
+      renderTeas();
+      $("scanPanel").hidden=true;
+      syncCreationMode();
+      selectTea();
+      $("brewMessage").textContent="Tea found in the shared catalog.";
+      $("scanFile").value="";
+      $("galleryFile").value="";
+      return;
+    }
+  }
+}catch(e){scanError=e;console.warn("Barcode lookup",e);}
+await performScan();
+$("scanStatus").hidden=false;
+$("scanStatus").textContent=scanProductCode
+  ?"New barcode: "+scanProductCode.value+". Complete the tea details to save for everyone."
+  :scanError
+    ?"Barcode unavailable. You can still enter the tea details."
+    :"No barcode detected. Check the photo or enter the tea details.";
 }
 $("scanFile").addEventListener("change",()=>acceptScan($("scanFile").files[0]));
 $("galleryFile").addEventListener("change",()=>acceptScan($("galleryFile").files[0]));
@@ -1071,7 +1103,7 @@ $("scanStatus").textContent="";
 scanStage(true);$("scanFeedback").textContent="";
 }finally{scanning=false;}
 }
-$("scanBack").addEventListener("click",()=>{$("scanPanel").hidden=true;syncCreationMode();$("teaTrigger").focus();});
+$("scanBack").addEventListener("click",()=>{scanProductCode=null;$("scanPanel").hidden=true;syncCreationMode();$("teaTrigger").focus();});
 $("scanSave").addEventListener("click",async()=>{
 const name=$("scanName").value.trim(),qty=Number($("scanDose").value),base=Number($("scanBase").value),mins=Number($("scanMin").value),unit=$("scanUnit").value,type=$("scanType").value;
 const required=[["scanName","Tea name"],["scanDose","Quantity"],["scanUnit","Unit"],["scanBase","Water"],["scanMin","Brewing time"]];
@@ -1086,7 +1118,7 @@ $("scanFeedback").textContent="Tea type and quantity unit must match.";return;
 }
 const dose=qty*1000/base;
 if(dose<=0||dose>1000){$("scanFeedback").textContent="Tea quantity is outside the allowed range.";return;}
-try{await FancyCloud.save({name,type,qty,base,mins,unit});}catch(e){$("scanFeedback").textContent=e.message||"Cloud saving failed.";return;}
+try{await FancyCloud.save({name,type,qty,base,mins,unit,code:scanProductCode});}catch(e){$("scanFeedback").textContent=e.message||"Cloud saving failed.";return;}
 const tea={id:"scan-"+Date.now(),name,type,dose,min:mins,unit,provisional:false};
 const next=[...saved,tea];
 try{localStorage.setItem("fancy-cuppa-teas-v1",JSON.stringify(next));}catch(e){$("scanFeedback").textContent="Couldn’t save this tea on your device.";return;}
