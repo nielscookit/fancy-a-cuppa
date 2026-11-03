@@ -501,7 +501,7 @@ body:not(.timer-focus) main{overflow-anchor:none}
 <div id="doseContent" hidden>
 <div class="divider"></div>
 <section aria-label="Tea preparation">
-<div class="scan-choices"><label class="scan-action" for="scanFile" aria-label="Scan tea packaging" title="Scan tea packaging"><span class="material-symbols-outlined scan-choice-icon" aria-hidden="true">document_scanner</span></label><label class="scan-action" for="galleryFile" aria-label="Choose photo" title="Choose photo"><span class="material-symbols-outlined scan-choice-icon" aria-hidden="true">photo</span></label></div>
+<div class="scan-choices"><button class="scan-action" id="liveScan" type="button" aria-label="Scan barcode with camera" title="Scan barcode with camera"><span class="material-symbols-outlined scan-choice-icon" aria-hidden="true">document_scanner</span></button><label class="scan-action" for="galleryFile" aria-label="Choose photo" title="Choose photo"><span class="material-symbols-outlined scan-choice-icon" aria-hidden="true">photo</span></label></div>
 <input class="scan-input" id="scanFile" type="file" accept="image/*" capture="environment">
 <input class="scan-input" id="galleryFile" type="file" accept="image/*">
 <div id="scanPanel" class="scan-panel" hidden>
@@ -1046,6 +1046,33 @@ $("scanStatus").textContent=scanProductCode
     ?"Barcode unavailable. You can still enter the tea details."
     :"No barcode detected. Check the photo or enter the tea details.";
 }
+async function acceptLiveCode(code){
+ scanProductCode=code;
+ $("scanManualCode").value=code.value;
+ $("scanPanel").hidden=false;
+ $("scanReview").hidden=false;
+ $("scanStatus").hidden=false;
+ $("scanStatus").textContent="Barcode recognized: "+code.value+". Checking catalog…";
+ syncCreationMode();
+ try{
+  const existing=await FancyCloud.lookup(code);
+  if(existing){
+   if(!cloudTeas.some(t=>t.id===existing.id))cloudTeas.push(existing);
+   selectedTea=existing.id;brewMin=existing.min;
+   renderTeas();$("scanPanel").hidden=true;syncCreationMode();selectTea();
+   $("brewMessage").textContent="Tea found in shared catalog.";
+   return;
+  }
+  FancyForm.fill("scan",{name:"",brand:"",category:"",subcategory:"",type:"loose",unit:"tsp"});
+  $("scanStatus").textContent="New barcode: "+code.value+". Complete the tea details.";
+ }catch(e){
+  $("scanStatus").textContent="Lookup unavailable. You can enter the tea details manually.";
+  console.warn("Cloud barcode lookup",e);
+ }
+}
+$("liveScan").addEventListener("click",()=>{
+ FancyBarcode.openCamera(acceptLiveCode,()=>$("scanFile").click());
+});
 $("scanFile").addEventListener("change",()=>acceptScan($("scanFile").files[0]));
 $("galleryFile").addEventListener("change",()=>acceptScan($("galleryFile").files[0]));
 function scanStage(review){$("scanReview").hidden=!review;}
