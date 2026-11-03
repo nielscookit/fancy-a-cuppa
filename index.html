@@ -248,8 +248,8 @@ body.timer-focus .timer .center{position:static}
 body.timer-focus .timer .dial{flex-direction:column;gap:12px;width:min(360px,calc(100vw - 40px),calc(100dvh - 180px));height:auto;aspect-ratio:auto}
 body.timer-focus .timer .tea-visual{display:block;width:min(330px,100%);aspect-ratio:1;position:relative;overflow:hidden}
 .tea-visual{display:none}
-.tea-visual video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
-.tea-visual video[hidden]{display:none!important}
+.tea-visual video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.tea-visual video[hidden]{visibility:hidden;opacity:0}
 .tea-visual{background:#faf9f6;isolation:isolate;-webkit-mask-image:radial-gradient(circle closest-side at center,#000 68%,rgba(0,0,0,.92) 77%,rgba(0,0,0,.5) 88%,transparent 100%);mask-image:radial-gradient(circle closest-side at center,#000 68%,rgba(0,0,0,.92) 77%,rgba(0,0,0,.5) 88%,transparent 100%)}
 .tea-visual video{background:transparent}
 .tea-visual video{visibility:hidden;opacity:0}
@@ -711,9 +711,9 @@ const teaVideos=[fillVideo,brewVideo,steepVideo,milkVideo],teaBase="https://raw.
 [teaBase+"FIll.mp4",teaBase+"brew.mp4",teaBase+"still.mp4","./MILK.mp4"].forEach((src,i)=>{const v=teaVideos[i];v.src=src;v.muted=true;v.defaultMuted=true;v.preload="auto";v.load()});
 const pourAudio=new Audio("./BrewNEW2.mp3"),bubbleAudio=new Audio("./BlubbKlein.mp3"),milkAudio=new Audio("./BlubbMILCH.mp3");
 [pourAudio,bubbleAudio,milkAudio].forEach(a=>a.preload="auto");
-let teaPhase=0,teaToken=0,milkTriggered=false,milkSoundTimer=null,bubblePlayed=false,lastStillTime=0;
+let teaPhase=0,teaToken=0,milkTriggered=false,milkSoundTimer=null,bubbleTimer=null,bubblePlayed=false,lastStillTime=0;
 function teaSound(a){a.pause();try{a.currentTime=0}catch(e){};a.play().catch(e=>console.warn("Tea sound",e))}
-function teaStopSounds(){[pourAudio,bubbleAudio,milkAudio].forEach(a=>{a.pause();try{a.currentTime=0}catch(e){}});clearTimeout(milkSoundTimer)}
+function teaStopSounds(){[pourAudio,bubbleAudio,milkAudio].forEach(a=>{a.pause();try{a.currentTime=0}catch(e){}});clearTimeout(milkSoundTimer);clearTimeout(bubbleTimer)}
 function videoPause(){teaVideos.forEach(v=>v.pause());teaStopSounds()}
 function videoReset(){++teaToken;videoPause();teaPhase=0;milkTriggered=false;bubblePlayed=false;lastStillTime=0;teaVideos.forEach((v,i)=>{v.classList.remove("visible");v.hidden=i!==0;try{v.currentTime=0}catch(e){}})}
 function teaReady(v){if(v.readyState>=2)return Promise.resolve();return new Promise((resolve,reject)=>{const ok=()=>{clean();resolve()},bad=()=>{clean();reject(new Error("Video load failed"))},clean=()=>{v.removeEventListener("loadeddata",ok);v.removeEventListener("error",bad)};v.addEventListener("loadeddata",ok,{once:true});v.addEventListener("error",bad,{once:true});v.load()})}
@@ -722,25 +722,34 @@ async function teaShow(i){
  const token=++teaToken,next=teaVideos[i],prev=teaVideos[teaPhase];
  try{await teaReady(next);if(!running||token!==teaToken)return;
  if(i!==teaPhase)next.currentTime=0;
- // Keep the outgoing last frame on screen until the incoming video is actually playing.
+ // Wait for a rendered frame, not just a resolved play promise.
  next.hidden=false;
- try{await next.play()}catch(e){console.warn("Video playback",e);return}
+ try{
+   await next.play();
+   if(next.requestVideoFrameCallback){
+     await Promise.race([new Promise(resolve=>next.requestVideoFrameCallback(()=>resolve())),new Promise(resolve=>setTimeout(resolve,350))]);
+   }
+ }catch(e){console.warn("Video playback",e);return}
  if(!running||token!==teaToken){next.pause();return}
  next.classList.add("visible");
  if(prev!==next){prev.classList.remove("visible");prev.hidden=true;prev.pause()}
  teaPhase=i;
  if(i===0)teaSound(pourAudio);
  if(i===1)pourAudio.pause();
- if(i===2){bubblePlayed=false;lastStillTime=0}
- if(i===3){milkTriggered=true;bubbleAudio.pause();clearTimeout(milkSoundTimer);milkSoundTimer=setTimeout(()=>teaSound(milkAudio),60)}
+ if(i===2&&!bubblePlayed){bubblePlayed=true;clearTimeout(bubbleTimer);bubbleTimer=setTimeout(()=>{if(running&&teaPhase===2&&!milkTriggered)teaSound(bubbleAudio)},1030)}
+ if(i===3){milkTriggered=true;clearTimeout(bubbleTimer);bubbleAudio.pause();clearTimeout(milkSoundTimer);milkSoundTimer=setTimeout(()=>teaSound(milkAudio),60)}
  }catch(e){console.warn("Video transition",e)}
 }
 function videoSync(){if(!running){videoPause();return}const v=teaVideos[teaPhase];v.hidden=false;v.classList.add("visible");v.play().catch(()=>{});if(teaPhase===0&&pourAudio.paused)teaSound(pourAudio)}
 fillVideo.addEventListener("ended",()=>{pourAudio.pause();if(running&&!milkTriggered)teaShow(1)});
 brewVideo.addEventListener("ended",()=>{if(running&&!milkTriggered)teaShow(2)});
-steepVideo.addEventListener("timeupdate",()=>{const t=steepVideo.currentTime;if(running&&teaPhase===2&&!milkTriggered&&!bubblePlayed&&t>=1.03){bubblePlayed=true;teaSound(bubbleAudio)}lastStillTime=t});
+
 teaVideos.forEach(v=>v.addEventListener("error",()=>console.warn("Tea video failed",v.currentSrc)));
-function unlockTeaAudio(){[bubbleAudio,milkAudio].forEach(a=>{a.muted=true;const p=a.play();if(p)p.then(()=>{a.pause();a.currentTime=0;a.muted=false}).catch(()=>{a.muted=false})})}
+function unlockTeaAudio(){[bubbleAudio,milkAudio].forEach(a=>{
+ a.muted=true;
+ const p=a.play();
+ if(p)p.then(()=>{a.pause();a.currentTime=0;a.muted=false}).catch(()=>{a.muted=false});
+})}
 function clock(sec){
 const n=Math.max(0,Math.ceil(sec));
 return String(Math.floor(n/60)).padStart(2,"0")+":"+String(n%60).padStart(2,"0");
@@ -800,7 +809,8 @@ function tick(){
 if(!running)return;
 remaining=Math.max(0,(deadline-Date.now())/1000);
 if(remaining<=0){
-stop();remaining=0;finished=true;milkVideo.hidden=false;milkVideo.classList.add("visible");
+const milkWasStarted=milkTriggered;
+stop();remaining=0;finished=true;if(milkWasStarted){milkVideo.hidden=false;milkVideo.classList.add("visible");}
 $("message").textContent="";
 draw();
 playVoice().catch(()=>{});
