@@ -2,7 +2,7 @@
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fancy a Cuppa – Tee-Loader Test</title>
 <style>
 :root{font-family:system-ui,-apple-system,sans-serif;color:#29261f;background:#faf9f6}*{box-sizing:border-box}body{margin:0;padding:28px 16px}main{max-width:680px;margin:auto}h1{font-size:25px;margin:0 0 7px}p{color:#666256;line-height:1.5}.panel{background:#fff;border:1px solid #e9e5da;border-radius:16px;padding:18px;margin:18px 0}.stage{position:relative;aspect-ratio:1/1;max-width:500px;margin:auto;overflow:hidden;background:#faf9f6}.stage img,.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}.stage video{display:none}.stage img{opacity:0}.stage img.active{opacity:1}label{font-weight:600;display:block;margin:12px 0 6px}input[type=file]{width:100%;max-width:100%}button,select{padding:11px 14px;border-radius:9px;border:1px solid #bdb8ac;background:white;color:#29261f;font:inherit}button{cursor:pointer}button.primary{background:#29382e;color:white;border-color:#29382e}button:disabled{opacity:.45;cursor:not-allowed} .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.bar{width:100%;accent-color:#354e39}small{color:#777}#status{font-weight:600;font-variant-numeric:tabular-nums}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}#counter{font-variant-numeric:tabular-nums} 
-</style></head><body><main><h1>Fancy a Cuppa – Tee-Loader Test</h1><p>Unabhängige Vorschau auf dem Test-Branch. Wähle deine drei Dateien aus; sie werden nur lokal im Browser verwendet und nicht hochgeladen.</p>
+</style></head><body><main><h1>Fancy a Cuppa – Tee-Loader Test</h1><p>Unabhängige Vorschau auf dem Test-Branch. Die drei Dateien sind bereits eingebunden. Starte direkt den 10-Sekunden-Test. Bei Bedarf kannst du eigene Dateien auswählen.</p>
 <section class="panel"><label for="fill">1 · Einfüllvideo (MP4)</label><input id="fill" type="file" accept="video/*">
 <label for="water">2 · Klares Wasser (PNG/JPG)</label><input id="water" type="file" accept="image/*">
 <label for="tea">3 · Dunkler Tee (PNG/JPG)</label><input id="tea" type="file" accept="image/*"></section>
@@ -25,4 +25,10 @@ $('play').addEventListener('click',async()=>{if(!loaded())return;clear();duratio
 video.addEventListener('ended',()=>{if(mode==='filling')steep()});
 $('reset').addEventListener('click',clear);
 $('scrub').addEventListener('input',e=>{if(!loaded())return;cancelAnimationFrame(raf);video.pause();video.style.display='none';mode='scrub';show(Number(e.target.value)/100);$('counter').textContent=format(Number(e.target.value)/100*Number($('duration').value));$('status').textContent='Manuelle Vorschau'});
+
+// Projektdateien aus demselben Test-Branch automatisch verwenden.
+urls.fill='FillAlt.mp4';urls.water='02.png';urls.tea='03.png';
+video.src=urls.fill;video.load();
+$('waterImage').src=urls.water;$('teaImage').src=urls.tea;
+$('play').disabled=false;show(0);$('status').textContent='Bereit';
 </script></body></html>
