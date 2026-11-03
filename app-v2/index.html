@@ -521,6 +521,7 @@ body:not(.timer-focus) main{overflow-anchor:none}
 <label><span class="field-label">Reference water (ml) *</span><input id="scanBase" type="number" min="50" max="5000" step="1" inputmode="numeric" placeholder="e.g. 900"></label>
 <label><span class="field-label">Brewing time (minutes) *</span><input id="scanMin" type="number" min="0.5" max="30" step="0.5" inputmode="decimal" placeholder="e.g. 4"></label>
 <label><span class="field-label">Water temperature (°C), optional</span><input id="scanTemp" type="number" min="40" max="100" step="1" inputmode="numeric" placeholder="e.g. 95"></label>
+<label><span class="field-label">Barcode / QR code (optional)</span><input id="scanManualCode" maxlength="512" placeholder="Detected code or enter manually"></label>
 <p class="hint">Scanned values are suggestions. Check them against the pack. Different spoon sizes are not interchangeable.</p>
 <p id="scanRaw" hidden></p>
 <div class="scan-actions"><button id="scanBack" type="button" aria-label="Cancel" title="Cancel"><span class="material-symbols-outlined save-cancel-icon" aria-hidden="true">close</span></button><button id="scanSave" class="confirm" type="button" aria-label="Save" title="Save"><span class="material-symbols-outlined save-cancel-icon" aria-hidden="true">check</span></button></div>
@@ -1010,6 +1011,7 @@ scanProductCode=null;
 $("scanPanel").hidden=false;
 syncCreationMode();
 $("scanReview").hidden=false;
+$("scanManualCode").value="";
 $("scanFeedback").textContent="";
 $("scanStatus").hidden=false;
 $("scanStatus").textContent="Reading barcode…";
@@ -1018,6 +1020,7 @@ try{
   const code=await FancyBarcode.scan(file);
   if(code){
     scanProductCode=code;
+    $("scanManualCode").value=code.value;
     $("scanStatus").textContent="Barcode recognized. Checking shared catalog…";
     const existing=await FancyCloud.lookup(code);
     if(existing){
@@ -1118,8 +1121,8 @@ async function performScan(){
 const file=scanFile;if(!file||scanning)return;
 scanning=true;
 $("scanFeedback").textContent="";
-["scanName","scanDose","scanBase","scanMin"].forEach(id=>$(id).value="");
-$("scanUnit").value="";$("scanType").value="loose";
+["scanName","scanBrand","scanCategory","scanSubcategory","scanOther","scanDose","scanBase","scanMin","scanTemp"].forEach(id=>$(id).value="");
+$("scanUnit").value="tsp";$("scanType").value="loose";FancyForm.fill("scan",{name:"",brand:"",category:"",subcategory:"",type:"loose",unit:"tsp"});
 try{
 const ocr=await loadOcr();
 const worker=await ocr.createWorker("deu+eng");
@@ -1138,26 +1141,35 @@ scanStage(true);$("scanFeedback").textContent="";
 }
 $("scanBack").addEventListener("click",()=>{scanProductCode=null;$("scanPanel").hidden=true;syncCreationMode();$("teaTrigger").focus();});
 $("scanSave").addEventListener("click",async()=>{
-const name=$("scanName").value.trim(),qty=Number($("scanDose").value),base=Number($("scanBase").value),mins=Number($("scanMin").value),unit=$("scanUnit").value,type=$("scanType").value;
-const required=[["scanName","Tea name"],["scanDose","Quantity"],["scanUnit","Unit"],["scanBase","Water"],["scanMin","Brewing time"]];
-const missing=required.filter(([id])=>!$(id).value);
-if(missing.length){$("scanFeedback").textContent="Please complete: "+missing.map(x=>x[1]).join(", ")+".";
-$(missing[0][0]).focus();return;}
-if(!name||!unit||!Number.isFinite(qty)||qty<=0||!Number.isFinite(base)||base<50||base>5000||!Number.isInteger(mins)||mins<1||mins>60){
-$("scanFeedback").textContent="Check the tea name, quantity, unit, water volume and brewing time.";return;
-}
-if((type==="bag")!==(unit==="bag")){
-$("scanFeedback").textContent="Tea type and quantity unit must match.";return;
-}
-const dose=qty*1000/base;
-if(dose<=0||dose>1000){$("scanFeedback").textContent="Tea quantity is outside the allowed range.";return;}
-try{await FancyCloud.save({name,type,qty,base,mins,unit,code:scanProductCode});}catch(e){$("scanFeedback").textContent=e.message||"Cloud saving failed.";return;}
-const tea={id:"scan-"+Date.now(),name,type,dose,min:mins,unit,provisional:false};
-const next=[...saved,tea];
-try{localStorage.setItem("fancy-cuppa-teas-v1",JSON.stringify(next));}catch(e){$("scanFeedback").textContent="Couldn’t save this tea on your device.";return;}
-saved=next;selectedTea=tea.id;brewMin=mins;renderTeas();selectTea();
-$("scanPanel").hidden=true;syncCreationMode();$("brewMessage").textContent="Tea saved for everyone.";
-requestAnimationFrame(()=>{$("teaTrigger").scrollIntoView({behavior:"instant",block:"start"});});
+ let d;
+ try{d=FancyForm.validate("scan");}
+ catch(e){$("scanFeedback").textContent=e.message;return;}
+ const rawCode=$("scanManualCode").value.trim();
+ let code=scanProductCode;
+ if(rawCode){
+  if(code&&code.value!==rawCode)code=null;
+  if(!code){
+   const type=rawCode.length===8&&/^\d+$/.test(rawCode)?"ean_8":
+     rawCode.length===12&&/^\d+$/.test(rawCode)?"upc_a":
+     rawCode.length===13&&/^\d+$/.test(rawCode)?"ean_13":
+     rawCode.length===14&&/^\d+$/.test(rawCode)?"gtin_14":"qr";
+   code={type,value:rawCode};
+  }
+ }
+ const button=$("scanSave");button.disabled=true;
+ $("scanFeedback").textContent="Saving to shared catalog…";
+ try{
+  const result=await FancyCloud.save({...d,code});
+  const rows=await FancyCloud.list();
+  cloudTeas=rows;
+  const tea=cloudTeas.find(t=>t.id==="cloud-"+result.id);
+  if(tea){selectedTea=tea.id;brewMin=tea.min;renderTeas();selectTea();}
+  $("scanPanel").hidden=true;syncCreationMode();
+  $("brewMessage").textContent=result.existing?"Tea already exists.":"Tea saved for everyone.";
+  scanProductCode=null;
+  requestAnimationFrame(()=>$("teaTrigger").scrollIntoView({behavior:"instant",block:"start"}));
+ }catch(e){$("scanFeedback").textContent=e.message||"Cloud saving failed.";}
+ finally{button.disabled=false;}
 });
 
 renderTeas();renderVolumes();selectTea();updateScanUnits();
